@@ -55,7 +55,9 @@ namespace DailyEvents
 
     private static string CurrentTimeMillis()
     {
-      return (DateTime.UtcNow - Jan1st1970).TotalMilliseconds.ToString();
+      string millis = (DateTime.UtcNow - Jan1st1970).TotalMilliseconds.ToString();
+      millis = millis.Substring(0, millis.IndexOf('.'));
+      return millis;
     }
   }
 }
