@@ -31,25 +31,21 @@ namespace DailyEvents
     public dynamic GetParticipants(string group)
     {
       string url = CreateUrl("/participants/", group);
-      return http.Get(url, new Dictionary<string, string>() {
-        { "group", group }
-      });
+      return http.Get(url);
     }
 
     public dynamic AddComment(string group, string user, string comment)
     {
       string url = CreateUrl("/comments/", group);
       return http.Post(url, new Dictionary<string, string>() {
-        { "group", group }, { "user", user }, { "comment", comment }
+        { "user", user }, { "comment", comment }
       });
     }
     
     public dynamic GetComments(string group)
     {
       string url = CreateUrl("/comments/", group);
-      return http.Get(url, new Dictionary<string, string>() {
-        { "group", group }
-      });
+      return http.Get(url);
     }
 
     private string CreateUrl(string path, string group)
