@@ -50,5 +50,6 @@
     <Compile Include="ApiClientTest.cs" />
     <Compile Include="ApiClient.cs" />
     <Compile Include="HttpClient.cs" />
+    <Compile Include="DateUtils.cs" />
   </ItemGroup>
 </Project>
