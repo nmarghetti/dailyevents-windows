@@ -9,13 +9,19 @@ namespace DailyEvents
 
     public ApiClient()
     {
-      this.http = new HttpClient("http://dailyevents.cloudfoundry.com/api");
+      this.http = new HttpClient(Properties.Settings.Default.ApiEntryPoint);
     }
 
     public dynamic CreateGroup()
     {
       dynamic result = http.Post("/groups");
       return result["id"];
+    }
+
+    public dynamic GetGroup(string group)
+    {
+      string url = CreateUrl("/groups/", group);
+      return http.Get(url);
     }
 
     public dynamic RSVP(string group, string user, string reply)

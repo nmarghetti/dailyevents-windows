@@ -1,5 +1,5 @@
-using System;
 using NUnit.Framework;
+using System;
 
 namespace DailyEvents
 {
@@ -29,11 +29,10 @@ namespace DailyEvents
       api.RSVP(TestGroup, "gliguori", "no");
 
       dynamic participants = api.GetParticipants(TestGroup);
-      Assert.AreEqual(2, participants.Count);
 
+      Assert.AreEqual(2, participants.Count);
       Assert.IsTrue(participants.ContainsKey("tfernandez"));
       Assert.IsTrue(participants.ContainsKey("ewatanabe"));
-      Assert.IsTrue(!participants.ContainsKey("gliguori"));
     }
 
     [Test()]
@@ -44,6 +43,15 @@ namespace DailyEvents
 
       dynamic comments = api.GetComments(TestGroup);
       Assert.IsTrue(comments.Count >= 2);
+    }
+
+    [Test()]
+    public void should_get_participants_and_comments_for_todays_event()
+    {
+      dynamic group = api.GetGroup(TestGroup);
+      Assert.AreEqual(2, group.Count);
+      Assert.AreEqual(2, group["participants"].Count);
+      Assert.IsTrue(group["comments"].Count >= 2);
     }
   }
 }

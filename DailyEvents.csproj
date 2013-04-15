@@ -45,11 +45,18 @@
     <Reference Include="Microsoft.CSharp" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="DailyEvents.cs" />
-    <Compile Include="DailyEventsContext.cs" />
     <Compile Include="ApiClientTest.cs" />
     <Compile Include="ApiClient.cs" />
     <Compile Include="HttpClient.cs" />
     <Compile Include="DateUtils.cs" />
+    <Compile Include="App.cs" />
+    <Compile Include="Properties\Settings.Designer.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="app.config" />
+    <None Include="Properties\Settings.settings" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Properties\" />
   </ItemGroup>
 </Project>
