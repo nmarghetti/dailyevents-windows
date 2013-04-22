@@ -51,6 +51,9 @@
     <Compile Include="DateUtils.cs" />
     <Compile Include="App.cs" />
     <Compile Include="Properties\Settings.Designer.cs" />
+    <Compile Include="Prompt.cs" />
+    <Compile Include="Json.cs" />
+    <Compile Include="Config.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

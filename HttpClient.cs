@@ -4,7 +4,6 @@ using System.IO;
 using System.Net;
 using System.Text;
 using System.Web;
-using System.Web.Script.Serialization;
 
 namespace DailyEvents
 {
@@ -35,7 +34,7 @@ namespace DailyEvents
         StreamReader reader = new StreamReader(webResponse.GetResponseStream());
         response = reader.ReadToEnd();
       }
-      return Deserialize(response);
+      return Json.Deserialize(response);
     }
     
     public dynamic Post(string path)
@@ -63,13 +62,7 @@ namespace DailyEvents
         StreamReader reader = new StreamReader(webResponse.GetResponseStream());
         response = reader.ReadToEnd();
       }
-      return Deserialize(response);
-    }
-    
-    private dynamic Deserialize(string json)
-    {
-      var serializer = new JavaScriptSerializer();
-      return serializer.Deserialize<dynamic>(json);
+      return Json.Deserialize(response);
     }
     
     private string ToStringParameters(Dictionary<string, string> parameters)

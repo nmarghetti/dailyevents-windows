@@ -9,7 +9,7 @@ namespace DailyEvents
 
     public ApiClient()
     {
-      this.http = new HttpClient(Properties.Settings.Default.ApiEntryPoint);
+      this.http = new HttpClient(Config.ApiEntryPoint);
     }
 
     public dynamic CreateGroup()

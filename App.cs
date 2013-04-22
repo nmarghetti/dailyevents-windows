@@ -7,11 +7,12 @@ namespace DailyEvents
   public class App : Form
   {
     private readonly string loggedUser = Environment.UserName;
+    private readonly bool osxDebug = false;
 
     private readonly ApiClient api = new ApiClient();
 
+    private readonly ContextMenu trayMenu = new ContextMenu();
     private NotifyIcon trayIcon;
-    private ContextMenu trayMenu;
 
     [STAThread]
     static public void Main()
@@ -21,20 +22,112 @@ namespace DailyEvents
 
     public App()
     {
-      trayMenu = new ContextMenu();
-      trayMenu.MenuItems.Add("Exit", OnExit);
-      
+      RebuildTrayMenu();
+
+      if (osxDebug)
+        OSX_Debug();
+      else
+        InitTrayIcon();
+    }
+
+    private void OSX_Debug()
+    {
+      Controls.Add(new ToolStrip() {
+        ContextMenu = trayMenu
+      });
+      MouseDown += OnRefreshGroup;
+    }
+
+    private void InitTrayIcon()
+    {
       trayIcon = new NotifyIcon();
       trayIcon.Text = "Daily Events";
-      trayIcon.Icon = new Icon(SystemIcons.Application, 40, 40);
-      
       trayIcon.ContextMenu = trayMenu;
+      trayIcon.MouseDown += OnRefreshGroup;
       trayIcon.Visible = true;
+      SetAppIcon();
+    }
+
+    private void RebuildTrayMenu()
+    {
+      RebuildTrayMenu(null, null);
+    }
+
+    private void RebuildTrayMenu(dynamic participants, dynamic comments)
+    {
+      if (participants != null || comments != null)
+      {
+        trayMenu.MenuItems.Clear();
+      }
+      if (IsCurrentGroupSet())
+      {
+        trayMenu.MenuItems.Add(Config.Groups[Config.CurrentGroup]);
+        trayMenu.MenuItems.Add("-");
+
+        if (participants != null && participants.Count > 0)
+        {
+          foreach (var participant in participants.Keys)
+          {
+            trayMenu.MenuItems.Add(participant);
+          }
+        } else
+        {
+          trayMenu.MenuItems.Add("Nobody is attending yet");
+        }
+        trayMenu.MenuItems.Add("-");
+        trayMenu.MenuItems.Add("I'm in", OnReplyYes);
+        trayMenu.MenuItems.Add("I'm out", OnReplyNo);
+        trayMenu.MenuItems.Add("-");
+        trayMenu.MenuItems.Add("Add comment", OnNewComment);
+        trayMenu.MenuItems.Add("-");
+
+        if (comments != null && comments.Count > 0)
+        {
+          foreach (var timestamp in comments.Keys)
+          {
+            dynamic entry = comments [timestamp];
+            string user = entry["user"];
+            string comment = entry["comment"];
+            string localTime = DateUtils.FormatTime(timestamp);
+            trayMenu.MenuItems.Add(localTime + " " + user + ": " + comment);
+          }
+          trayMenu.MenuItems.Add("-");
+        }
+      }
+      else
+      {
+        trayMenu.MenuItems.Add("No group is set");
+        trayMenu.MenuItems.Add("-");
+      }
+      trayMenu.MenuItems.Add(BuildGroupsMenu());
+
+      trayMenu.MenuItems.Add("-");
+      trayMenu.MenuItems.Add("Exit", OnExit);
+    }
+
+    MenuItem BuildGroupsMenu()
+    {
+      MenuItem menu = new MenuItem("Groups");
+
+      dynamic joinedGroups = Config.Groups;
+
+      foreach (var group in joinedGroups)
+      {
+        menu.MenuItems.Add(group.Value, (EventHandler)OnSwitchGroup); // (EventHandler)((sender, e) => {})
+      }
+      if (joinedGroups.Count > 0)
+      {
+        menu.MenuItems.Add("-");
+      }
+      menu.MenuItems.Add("Join group", OnJoinGroup);
+      menu.MenuItems.Add("Create group", OnCreateGroup);
+
+      return menu;
     }
 
     protected override void OnLoad(EventArgs e)
     {
-      Visible = false;
+      Visible = osxDebug;
       ShowInTaskbar = false;
       base.OnLoad(e);
     }
@@ -43,25 +136,52 @@ namespace DailyEvents
     {
       if (isDisposing)
       {
-        trayIcon.Dispose();
+        if (trayIcon != null)
+          trayIcon.Dispose();
       }
       base.Dispose(isDisposing);
     }
 
-    private void OnExit(object sender, EventArgs e)
+    private void OnRefreshGroup(object sender, MouseEventArgs e)
     {
-      Application.Exit();
+      if (Config.CurrentGroup.Length == 0)
+      {
+        return;
+      }
+      if (e.Button == MouseButtons.Right)
+      {
+        try
+        {
+          SetLoadingIcon();
+          dynamic groups = api.GetGroup(Config.CurrentGroup);
+          RebuildTrayMenu(groups["participants"], groups["comments"]);
+        }
+        catch (Exception ex)
+        {
+          ShowNetworkError(ex);
+        }
+        finally
+        {
+          SetAppIcon();
+        }
+      }
     }
 
     private void OnReplyYes(object sender, EventArgs e)
     {
       try
       {
-        MessageBox.Show("Attendance confirmed!");
+        SetLoadingIcon();
+        api.RSVP(Config.CurrentGroup, loggedUser, "yes");
+        ShowInfo("RSVP", "Attendance confirmed!");
       }
       catch (Exception ex)
       {
-        ShowError(ex);
+        ShowNetworkError(ex);
+      }
+      finally
+      {
+        SetAppIcon();
       }
     }
     
@@ -69,54 +189,163 @@ namespace DailyEvents
     {
       try
       {
-        MessageBox.Show("Attendance cancelled.");
+        SetLoadingIcon();
+        api.RSVP(Config.CurrentGroup, loggedUser, "no");
+        ShowInfo("RSVP", "Attendance cancelled.");
       }
       catch (Exception ex)
       {
-        ShowError(ex);
+        ShowNetworkError(ex);
+      }
+      finally
+      {
+        SetAppIcon();
       }
     }
 
     private void OnNewComment(object sender, EventArgs e)
     {
-      try
+      string comment = Prompt.ShowDialog("Add Comment", "Enter your comment:", 70);
+
+      if (comment.Length > 0)
       {
-        MessageBox.Show("Comment added.");
-      }
-      catch (Exception ex)
-      {
-        ShowError(ex);
+        try
+        {
+          SetLoadingIcon();
+          api.AddComment(Config.CurrentGroup, loggedUser, comment);
+          ShowInfo("Comment", "Comment added!");
+        }
+        catch (Exception ex)
+        {
+          ShowNetworkError(ex);
+        }
+        finally
+        {
+          SetAppIcon();
+        }
       }
     }
 
-    private void ShowError(Exception ex)
+    private void OnCreateGroup(object sender, EventArgs e)
+    {
+      string name = Prompt.ShowDialog("New Group", "Enter the group's name:", 20);
+      
+      if (name.Length > 0)
+      {
+        if (Config.Groups.ContainsValue(name))
+        {
+          MessageBox.Show("A group named '" + name + "' already exists, please enter another name.");
+          OnCreateGroup(sender, e);
+        }
+        else
+        {
+          try
+          {
+            SetLoadingIcon();
+            
+            string code = api.CreateGroup();
+
+            dynamic groups = Config.Groups;
+            groups.Add(code, name);
+            
+            Config.Groups = groups;
+            Config.CurrentGroup = code;
+            
+            ShowInfo("Group", "Created " + name + "!");
+          }
+          catch (Exception ex)
+          {
+            ShowNetworkError(ex);
+          }
+          finally
+          {
+            SetAppIcon();
+          }
+        }
+      }
+    }
+    
+    private void OnJoinGroup(object sender, EventArgs e)
+    {
+      string code = Prompt.ShowDialog("Existing Group", "Enter the group's code:", 15);
+      
+      if (code.Length > 0)
+      {
+        string name = Prompt.ShowDialog("Existing Group", "Enter the group's name:", 20);
+
+        if (name.Length > 0)
+        {
+          try
+          {
+            SetLoadingIcon();
+
+            dynamic groups = Config.Groups;
+            groups.Add(code, name);
+            
+            Config.Groups = groups;
+            Config.CurrentGroup = code;
+            
+            ShowInfo("Group", "Joined " + name + "!");
+          } catch (Exception ex)
+          {
+            ShowNetworkError(ex);
+          }
+          finally
+          {
+            SetAppIcon();
+          }
+        }
+      }
+    }
+
+    private void OnSwitchGroup(object sender, EventArgs e)
+    {
+      string name = ((MenuItem)sender).Text;
+      foreach (var group in Config.Groups)
+      {
+        if (group.Value == name)
+        {
+          Config.CurrentGroup = group.Key;
+          break;
+        }
+      }
+    }
+
+    private void ShowInfo(string title, string message)
+    {
+      if (trayIcon != null)
+        trayIcon.ShowBalloonTip(10000, title, message, ToolTipIcon.Info);
+    }
+
+    private void ShowNetworkError(Exception ex)
     {
       Console.Write(ex);
-      MessageBox.Show("Network error. Please try again.");
+
+      if (trayIcon != null)
+        trayIcon.ShowBalloonTip(10000, "Network error", "Please wait a bit and try again.", ToolTipIcon.Error);
     }
-  }
-
-  public static class Prompt
-  {
-    public static string ShowDialog(string text, string caption)
+    
+    private void SetAppIcon()
     {
-      Form prompt = new Form();
-      prompt.Width = 500;
-      prompt.Height = 150;
-      prompt.Text = caption;
+      if (trayIcon != null)
+        trayIcon.Icon = new Icon(SystemIcons.Application, 40, 40);
+    }
+    
+    private void SetLoadingIcon()
+    {
+      if (trayIcon != null)
+        trayIcon.Icon = new Icon(SystemIcons.Question, 40, 40);
+    }
 
-      Label textLabel = new Label() { Left = 50, Top=20, Text=text };
-      TextBox textBox = new TextBox() { Left = 50, Top=50, Width=400 };
+    private void OnExit(object sender, EventArgs e)
+    {
+      Application.Exit();
+    }
 
-      Button confirmation = new Button() { Text = "Ok", Left=350, Width=100, Top=70 };
-      confirmation.Click += (sender, e) => { prompt.Close(); };
-
-      prompt.Controls.Add(confirmation);
-      prompt.Controls.Add(textLabel);
-      prompt.Controls.Add(textBox);
-      prompt.ShowDialog();
-
-      return textBox.Text;
+    private bool IsCurrentGroupSet()
+    {
+      string currentGroup = Config.CurrentGroup;
+      return currentGroup.Length > 0 && Config.Groups.ContainsKey(currentGroup);
     }
   }
 }
