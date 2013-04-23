@@ -8,8 +8,12 @@ namespace DailyEvents
   {
     static private readonly string LoggedUser = Environment.UserName;
 
-    static private readonly bool DebugEnabled = false;
+    static private readonly bool DebugEnabled = true;
+
     static private readonly short MaxGroups = 5;
+    static private readonly short GroupNameMaxLength = 30;
+    static private readonly short GroupCodeMaxLength = 15;
+    static private readonly short CommentMaxLength = 70;
 
     private readonly ApiClient api = new ApiClient();
 
@@ -63,7 +67,7 @@ namespace DailyEvents
       }
       if (IsCurrentGroupSet())
       {
-        trayMenu.MenuItems.Add(Config.Groups[Config.CurrentGroup]);
+        trayMenu.MenuItems.Add(GetCurrentGroupName());
         trayMenu.MenuItems.Add("-");
 
         if (participants != null && participants.Count > 0)
@@ -74,7 +78,7 @@ namespace DailyEvents
           }
         } else
         {
-          trayMenu.MenuItems.Add("Nobody is attending yet");
+          trayMenu.MenuItems.Add("(nobody's attending yet)");
         }
         trayMenu.MenuItems.Add("-");
         trayMenu.MenuItems.Add("I'm in", OnReplyYes);
@@ -88,9 +92,11 @@ namespace DailyEvents
           foreach (var timestamp in comments.Keys)
           {
             dynamic entry = comments [timestamp];
+
             string user = entry["user"];
             string comment = entry["comment"];
             string localTime = DateUtils.FormatTime(timestamp);
+
             trayMenu.MenuItems.Add(localTime + " " + user + ": " + comment);
           }
           trayMenu.MenuItems.Add("-");
@@ -98,7 +104,7 @@ namespace DailyEvents
       }
       else
       {
-        trayMenu.MenuItems.Add("No group is set");
+        trayMenu.MenuItems.Add("(no group is set)");
         trayMenu.MenuItems.Add("-");
       }
       trayMenu.MenuItems.Add(BuildGroupsMenu());
@@ -119,14 +125,16 @@ namespace DailyEvents
         if (numberOfGroupsAdded == MaxGroups)
           break;
 
-        MenuItem subMenu = new MenuItem(group.Value, (EventHandler)OnSwitchGroup); // (EventHandler)((sender, e) => {})
+        // menu.MenuItems.Add(group.Value, (EventHandler)OnSwitchGroup); // (EventHandler)((sender, e) => {})
 
-        subMenu.MenuItems.Add("Rename", OnRenameGroup);
+        MenuItem subMenu = new MenuItem(group.Value);
+
+        subMenu.MenuItems.Add("Switch to", OnSwitchToGroup);
         subMenu.MenuItems.Add("Invite people", OnInvitePeople);
-        subMenu.MenuItems.Add("Leave", OnLeaveGroup);
+        subMenu.MenuItems.Add("Rename group", OnRenameGroup);
+        subMenu.MenuItems.Add("Leave group", OnLeaveGroup);
         
         menu.MenuItems.Add(subMenu);
-        // menu.MenuItems.Add(group.Value, (EventHandler)OnSwitchGroup); // (EventHandler)((sender, e) => {})
 
         numberOfGroupsAdded++;
       }
@@ -192,7 +200,7 @@ namespace DailyEvents
         api.RSVP(Config.CurrentGroup, LoggedUser, "yes");
         SetAppIcon();
 
-        ShowInfo("RSVP", "Attendance confirmed!");
+        ShowInfo("Attendance confirmed!");
       }
       catch (Exception ex)
       {
@@ -212,7 +220,7 @@ namespace DailyEvents
         api.RSVP(Config.CurrentGroup, LoggedUser, "no");
         SetAppIcon();
 
-        ShowInfo("RSVP", "Attendance cancelled.");
+        ShowInfo("Attendance cancelled.");
       }
       catch (Exception ex)
       {
@@ -226,7 +234,7 @@ namespace DailyEvents
 
     private void OnNewComment(object sender, EventArgs e)
     {
-      string comment = Prompt.ShowDialog("Add Comment", "Enter your comment:", 70);
+      string comment = Prompt.ShowDialog("Add Comment", "Enter your comment:", CommentMaxLength);
 
       if (comment.Length > 0)
       {
@@ -236,7 +244,7 @@ namespace DailyEvents
           api.AddComment(Config.CurrentGroup, LoggedUser, comment);
           SetAppIcon();
 
-          ShowInfo("New Comment", "Comment added!");
+          ShowInfo("Comment added!");
         }
         catch (Exception ex)
         {
@@ -254,14 +262,14 @@ namespace DailyEvents
       if (!CanJoinOrCreateGroups())
         return;
       
-      string name = Prompt.ShowDialog("Create Group", "Enter the group's name:", 20);
+      string name = Prompt.ShowDialog("Create Group", "Enter the group's name:", GroupNameMaxLength);
       
       if (name.Length == 0)
         return;
       
       if (Config.Groups.ContainsValue(name))
       {
-        MessageBox.Show("Existing Group", "A group named '" + name + "' already exists, please enter another name.");
+        MessageBox.Show("A group named '" + name + "' already exists, please enter another name.", "Existing Group");
         OnCreateGroup(sender, e);
       }
       else
@@ -273,12 +281,12 @@ namespace DailyEvents
           SetAppIcon();
 
           dynamic groups = Config.Groups;
-          groups.Add(code, name);
+          groups[code] = name;
           
           Config.Groups = groups;
           Config.CurrentGroup = code;
           
-          ShowInfo("New Group", name + " created.");
+          ShowInfo("Group created.");
         }
         catch (Exception ex)
         {
@@ -296,73 +304,144 @@ namespace DailyEvents
       if (!CanJoinOrCreateGroups())
         return;
       
-      string code = Prompt.ShowDialog("Join Group", "Enter the group's code:", 15);
+      string code = Prompt.ShowDialog("Join Group", "Group code:", GroupCodeMaxLength);
       
       if (code.Length == 0)
         return;
       
-      string name = Prompt.ShowDialog("Join Group", "Enter the group's name:", 20);
+      string name = Prompt.ShowDialog("Join Group", "Group name:", GroupNameMaxLength);
 
       if (name.Length == 0)
         return;
-      
-      try
-      {
-        SetLoadingIcon();
 
-        dynamic groups = Config.Groups;
-        groups.Add(code, name);
-        
-        Config.Groups = groups;
-        Config.CurrentGroup = code;
-        
-        ShowInfo("Group", "Joined " + name + "!");
-      }
-      catch (Exception ex)
+      if (Config.Groups.ContainsValue(name))
       {
-        ShowNetworkError(ex);
+        MessageBox.Show("A group named '" + name + "' already exists, please enter another name.", "Existing Group");
+        OnJoinGroup(sender, e);
       }
-      finally
+      else
       {
-        SetAppIcon();
-      }
-    }
-
-    private void OnLeaveGroup(object sender, EventArgs e)
-    {
-    }
-
-    private void OnRenameGroup(object sender, EventArgs e)
-    {
-    }
-    
-    private void OnInvitePeople(object sender, EventArgs e)
-    {
-    }
-    
-    private void OnSwitchGroup(object sender, EventArgs e)
-    {
-      string name = ((MenuItem)sender).Text;
-      foreach (var group in Config.Groups)
-      {
-        if (group.Value == name)
+        try
         {
-          Config.CurrentGroup = group.Key;
-          break;
+          SetLoadingIcon();
+
+          dynamic groups = Config.Groups;
+          groups [code] = name;
+          
+          Config.Groups = groups;
+          Config.CurrentGroup = code;
+          
+          ShowInfo("Joined existing group!");
+        }
+        catch (Exception ex)
+        {
+          ShowNetworkError(ex);
+        }
+        finally
+        {
+          SetAppIcon();
         }
       }
     }
 
-    private void ShowInfo(string title, string message)
+    private void OnSwitchToGroup(object sender, EventArgs e)
     {
-      if (trayIcon != null)
-        trayIcon.ShowBalloonTip(10000, title, message, ToolTipIcon.Info);
+      String name = GetParentMenuText(sender);
+      Config.CurrentGroup = GetGroupCode(name);
+
+      ShowInfo("Switched group.");
     }
 
+    private void OnInvitePeople(object sender, EventArgs e)
+    {
+      String name = GetParentMenuText(sender);
+      string code = GetGroupCode(name);
+
+      Clipboard.SetText(code);
+
+      MessageBox.Show("Send this code to guests: " + code + "\n\nThe code was just copied to your clipboard.", "Invite People");
+    }
+
+    private void OnRenameGroup(object sender, EventArgs e)
+    {
+      String currentName = GetParentMenuText(sender);
+      string code = GetGroupCode(currentName);
+      
+      string newName = Prompt.ShowDialog("Rename Group", "Enter the group's new name:", GroupNameMaxLength);
+      
+      dynamic groups = Config.Groups;
+      groups[code] = newName;
+      
+      Config.Groups = groups;
+
+      ShowInfo("Group renamed.");
+    }
+
+    private void OnLeaveGroup(object sender, EventArgs e)
+    {
+      String name = GetParentMenuText(sender);
+      string code = GetGroupCode(name);
+
+      dynamic groups = Config.Groups;
+      groups.Remove(code);
+      
+      Config.Groups = groups;
+
+      if (Config.CurrentGroup == code)
+        Config.CurrentGroup = "";
+
+      ShowInfo("Group left.");
+    }
+
+    private string GetParentMenuText(object sender)
+    {
+      return ((MenuItem)((MenuItem)sender).Parent).Text;
+    }
+
+    private bool CanJoinOrCreateGroups()
+    {
+      bool maxGroupsReached = Config.Groups.Count >= MaxGroups;
+      
+      if (maxGroupsReached)
+      {
+        MessageBox.Show("Sorry, this client is limited to " + MaxGroups + " groups.", "Max Groups Reached");
+      }
+      return !maxGroupsReached;
+    }
+
+    private bool IsCurrentGroupSet()
+    {
+      string currentGroup = Config.CurrentGroup;
+      return currentGroup.Length > 0 && Config.Groups.ContainsKey(currentGroup);
+    }
+
+    private string GetCurrentGroupName()
+    {
+      return Config.Groups[Config.CurrentGroup];
+    }
+
+    private string GetGroupCode(string name)
+    {
+      foreach (var group in Config.Groups)
+      {
+        if (group.Value == name)
+        {
+          return group.Key;
+        }
+      }
+      throw new ApplicationException("Group not found: " + name);
+    }
+
+    private void ShowInfo(string message)
+    {
+      if (trayIcon != null)
+        trayIcon.ShowBalloonTip(10000, "Info", message, ToolTipIcon.Info);
+    }
+    
     private void ShowNetworkError(Exception ex)
     {
       Console.Write(ex);
-
+      
       if (trayIcon != null)
         trayIcon.ShowBalloonTip(10000, "Network Error", "Please wait a bit and try again.", ToolTipIcon.Error);
     }
@@ -378,27 +457,10 @@ namespace DailyEvents
       if (trayIcon != null)
         trayIcon.Icon = new Icon(SystemIcons.Question, 40, 40);
     }
-
+    
     private void OnExit(object sender, EventArgs e)
     {
       Application.Exit();
-    }
-
-    private bool CanJoinOrCreateGroups()
-    {
-      bool maxGroupsReached = Config.Groups.Count >= MaxGroups;
-      
-      if (maxGroupsReached)
-      {
-        MessageBox.Show("Max Groups Reached", "Sorry, this client is limited to " + MaxGroups + " groups.");
-      }
-      return !maxGroupsReached;
-    }
-
-    private bool IsCurrentGroupSet()
-    {
-      string currentGroup = Config.CurrentGroup;
-      return currentGroup.Length > 0 && Config.Groups.ContainsKey(currentGroup);
     }
   }
 }
