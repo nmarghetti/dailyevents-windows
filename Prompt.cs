@@ -65,7 +65,7 @@ namespace DailyEvents
 
       Button okButton = new Button()
       {
-        Left  = 245,
+        Left  = 155,
         Width = 80,
         Top   = 80,
         Text  = "OK"
@@ -77,7 +77,7 @@ namespace DailyEvents
       
       Button cancelButton = new Button()
       {
-        Left  = 155,
+        Left  = 245,
         Width = 80,
         Top   = 80,
         Text  = "Cancel"
