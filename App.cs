@@ -6,8 +6,10 @@ namespace DailyEvents
 {
   public class App : Form
   {
-    private readonly string loggedUser = Environment.UserName;
-    private readonly bool osxDebug = false;
+    static private readonly string LoggedUser = Environment.UserName;
+
+    static private readonly bool DebugEnabled = false;
+    static private readonly short MaxGroups = 5;
 
     private readonly ApiClient api = new ApiClient();
 
@@ -24,13 +26,13 @@ namespace DailyEvents
     {
       RebuildTrayMenu();
 
-      if (osxDebug)
-        OSX_Debug();
+      if (DebugEnabled)
+        SetUpDebug();
       else
         InitTrayIcon();
     }
 
-    private void OSX_Debug()
+    private void SetUpDebug()
     {
       Controls.Add(new ToolStrip() {
         ContextMenu = trayMenu
@@ -110,10 +112,23 @@ namespace DailyEvents
       MenuItem menu = new MenuItem("Groups");
 
       dynamic joinedGroups = Config.Groups;
+      short numberOfGroupsAdded = 0;
 
       foreach (var group in joinedGroups)
       {
-        menu.MenuItems.Add(group.Value, (EventHandler)OnSwitchGroup); // (EventHandler)((sender, e) => {})
+        if (numberOfGroupsAdded == MaxGroups)
+          break;
+
+        MenuItem subMenu = new MenuItem(group.Value, (EventHandler)OnSwitchGroup); // (EventHandler)((sender, e) => {})
+
+        subMenu.MenuItems.Add("Rename", OnRenameGroup);
+        subMenu.MenuItems.Add("Invite people", OnInvitePeople);
+        subMenu.MenuItems.Add("Leave", OnLeaveGroup);
+        
+        menu.MenuItems.Add(subMenu);
+        // menu.MenuItems.Add(group.Value, (EventHandler)OnSwitchGroup); // (EventHandler)((sender, e) => {})
+
+        numberOfGroupsAdded++;
       }
       if (joinedGroups.Count > 0)
       {
@@ -127,7 +142,7 @@ namespace DailyEvents
 
     protected override void OnLoad(EventArgs e)
     {
-      Visible = osxDebug;
+      Visible = DebugEnabled;
       ShowInTaskbar = false;
       base.OnLoad(e);
     }
@@ -144,7 +159,7 @@ namespace DailyEvents
 
     private void OnRefreshGroup(object sender, MouseEventArgs e)
     {
-      if (Config.CurrentGroup.Length == 0)
+      if (!IsCurrentGroupSet())
       {
         return;
       }
@@ -154,6 +169,8 @@ namespace DailyEvents
         {
           SetLoadingIcon();
           dynamic groups = api.GetGroup(Config.CurrentGroup);
+          SetAppIcon();
+
           RebuildTrayMenu(groups["participants"], groups["comments"]);
         }
         catch (Exception ex)
@@ -172,7 +189,9 @@ namespace DailyEvents
       try
       {
         SetLoadingIcon();
-        api.RSVP(Config.CurrentGroup, loggedUser, "yes");
+        api.RSVP(Config.CurrentGroup, LoggedUser, "yes");
+        SetAppIcon();
+
         ShowInfo("RSVP", "Attendance confirmed!");
       }
       catch (Exception ex)
@@ -190,7 +209,9 @@ namespace DailyEvents
       try
       {
         SetLoadingIcon();
-        api.RSVP(Config.CurrentGroup, loggedUser, "no");
+        api.RSVP(Config.CurrentGroup, LoggedUser, "no");
+        SetAppIcon();
+
         ShowInfo("RSVP", "Attendance cancelled.");
       }
       catch (Exception ex)
@@ -212,8 +233,10 @@ namespace DailyEvents
         try
         {
           SetLoadingIcon();
-          api.AddComment(Config.CurrentGroup, loggedUser, comment);
-          ShowInfo("Comment", "Comment added!");
+          api.AddComment(Config.CurrentGroup, LoggedUser, comment);
+          SetAppIcon();
+
+          ShowInfo("New Comment", "Comment added!");
         }
         catch (Exception ex)
         {
@@ -228,76 +251,95 @@ namespace DailyEvents
 
     private void OnCreateGroup(object sender, EventArgs e)
     {
-      string name = Prompt.ShowDialog("New Group", "Enter the group's name:", 20);
+      if (!CanJoinOrCreateGroups())
+        return;
       
-      if (name.Length > 0)
+      string name = Prompt.ShowDialog("Create Group", "Enter the group's name:", 20);
+      
+      if (name.Length == 0)
+        return;
+      
+      if (Config.Groups.ContainsValue(name))
       {
-        if (Config.Groups.ContainsValue(name))
+        MessageBox.Show("Existing Group", "A group named '" + name + "' already exists, please enter another name.");
+        OnCreateGroup(sender, e);
+      }
+      else
+      {
+        try
         {
-          MessageBox.Show("A group named '" + name + "' already exists, please enter another name.");
-          OnCreateGroup(sender, e);
-        }
-        else
-        {
-          try
-          {
-            SetLoadingIcon();
-            
-            string code = api.CreateGroup();
+          SetLoadingIcon();
+          string code = api.CreateGroup();
+          SetAppIcon();
 
-            dynamic groups = Config.Groups;
-            groups.Add(code, name);
-            
-            Config.Groups = groups;
-            Config.CurrentGroup = code;
-            
-            ShowInfo("Group", "Created " + name + "!");
-          }
-          catch (Exception ex)
-          {
-            ShowNetworkError(ex);
-          }
-          finally
-          {
-            SetAppIcon();
-          }
+          dynamic groups = Config.Groups;
+          groups.Add(code, name);
+          
+          Config.Groups = groups;
+          Config.CurrentGroup = code;
+          
+          ShowInfo("New Group", name + " created.");
+        }
+        catch (Exception ex)
+        {
+          ShowNetworkError(ex);
+        }
+        finally
+        {
+          SetAppIcon();
         }
       }
     }
     
     private void OnJoinGroup(object sender, EventArgs e)
     {
-      string code = Prompt.ShowDialog("Existing Group", "Enter the group's code:", 15);
+      if (!CanJoinOrCreateGroups())
+        return;
       
-      if (code.Length > 0)
+      string code = Prompt.ShowDialog("Join Group", "Enter the group's code:", 15);
+      
+      if (code.Length == 0)
+        return;
+      
+      string name = Prompt.ShowDialog("Join Group", "Enter the group's name:", 20);
+
+      if (name.Length == 0)
+        return;
+      
+      try
       {
-        string name = Prompt.ShowDialog("Existing Group", "Enter the group's name:", 20);
+        SetLoadingIcon();
 
-        if (name.Length > 0)
-        {
-          try
-          {
-            SetLoadingIcon();
-
-            dynamic groups = Config.Groups;
-            groups.Add(code, name);
-            
-            Config.Groups = groups;
-            Config.CurrentGroup = code;
-            
-            ShowInfo("Group", "Joined " + name + "!");
-          } catch (Exception ex)
-          {
-            ShowNetworkError(ex);
-          }
-          finally
-          {
-            SetAppIcon();
-          }
-        }
+        dynamic groups = Config.Groups;
+        groups.Add(code, name);
+        
+        Config.Groups = groups;
+        Config.CurrentGroup = code;
+        
+        ShowInfo("Group", "Joined " + name + "!");
+      }
+      catch (Exception ex)
+      {
+        ShowNetworkError(ex);
+      }
+      finally
+      {
+        SetAppIcon();
       }
     }
 
+    private void OnLeaveGroup(object sender, EventArgs e)
+    {
+    }
+
+    private void OnRenameGroup(object sender, EventArgs e)
+    {
+    }
+    
+    private void OnInvitePeople(object sender, EventArgs e)
+    {
+    }
+    
     private void OnSwitchGroup(object sender, EventArgs e)
     {
       string name = ((MenuItem)sender).Text;
@@ -322,7 +364,7 @@ namespace DailyEvents
       Console.Write(ex);
 
       if (trayIcon != null)
-        trayIcon.ShowBalloonTip(10000, "Network error", "Please wait a bit and try again.", ToolTipIcon.Error);
+        trayIcon.ShowBalloonTip(10000, "Network Error", "Please wait a bit and try again.", ToolTipIcon.Error);
     }
     
     private void SetAppIcon()
@@ -340,6 +382,17 @@ namespace DailyEvents
     private void OnExit(object sender, EventArgs e)
     {
       Application.Exit();
+    }
+
+    private bool CanJoinOrCreateGroups()
+    {
+      bool maxGroupsReached = Config.Groups.Count >= MaxGroups;
+      
+      if (maxGroupsReached)
+      {
+        MessageBox.Show("Max Groups Reached", "Sorry, this client is limited to " + MaxGroups + " groups.");
+      }
+      return !maxGroupsReached;
     }
 
     private bool IsCurrentGroupSet()
