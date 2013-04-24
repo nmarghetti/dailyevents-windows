@@ -8,12 +8,12 @@ namespace DailyEvents
   {
     static private readonly string LoggedUser = Environment.UserName;
 
-    static private readonly bool DebugEnabled = true;
+    static private readonly bool DebugEnabled = false;
 
-    static private readonly short MaxGroups = 5;
+    static private readonly short MaxGroups          = 5;
     static private readonly short GroupNameMaxLength = 30;
     static private readonly short GroupCodeMaxLength = 15;
-    static private readonly short CommentMaxLength = 70;
+    static private readonly short CommentMaxLength   = 70;
 
     private readonly ApiClient api = new ApiClient();
 
@@ -61,10 +61,8 @@ namespace DailyEvents
 
     private void RebuildTrayMenu(dynamic participants, dynamic comments)
     {
-      if (participants != null || comments != null)
-      {
-        trayMenu.MenuItems.Clear();
-      }
+      trayMenu.MenuItems.Clear();
+
       if (IsCurrentGroupSet())
       {
         trayMenu.MenuItems.Add(GetCurrentGroupName());
@@ -76,7 +74,8 @@ namespace DailyEvents
           {
             trayMenu.MenuItems.Add(participant);
           }
-        } else
+        }
+        else
         {
           trayMenu.MenuItems.Add("(nobody's attending yet)");
         }
@@ -167,19 +166,22 @@ namespace DailyEvents
 
     private void OnRefreshGroup(object sender, MouseEventArgs e)
     {
-      if (!IsCurrentGroupSet())
-      {
-        return;
-      }
       if (e.Button == MouseButtons.Right)
       {
         try
         {
-          SetLoadingIcon();
-          dynamic groups = api.GetGroup(Config.CurrentGroup);
-          SetAppIcon();
+          if (IsCurrentGroupSet())
+          {
+            SetLoadingIcon();
+            dynamic groups = api.GetGroup(Config.CurrentGroup);
+            SetAppIcon();
 
-          RebuildTrayMenu(groups["participants"], groups["comments"]);
+            RebuildTrayMenu(groups["participants"], groups["comments"]);
+          }
+          else
+          {
+            RebuildTrayMenu();
+          }
         }
         catch (Exception ex)
         {
@@ -244,7 +246,7 @@ namespace DailyEvents
           api.AddComment(Config.CurrentGroup, LoggedUser, comment);
           SetAppIcon();
 
-          ShowInfo("Comment added!");
+          ShowInfo("Comment added.");
         }
         catch (Exception ex)
         {
@@ -286,7 +288,7 @@ namespace DailyEvents
           Config.Groups = groups;
           Config.CurrentGroup = code;
           
-          ShowInfo("Group created.");
+          ShowInfo("Group created!");
         }
         catch (Exception ex)
         {
@@ -331,7 +333,7 @@ namespace DailyEvents
           Config.Groups = groups;
           Config.CurrentGroup = code;
           
-          ShowInfo("Joined existing group!");
+          ShowInfo("Joined group!");
         }
         catch (Exception ex)
         {
@@ -390,7 +392,7 @@ namespace DailyEvents
       if (Config.CurrentGroup == code)
         Config.CurrentGroup = "";
 
-      ShowInfo("Group left.");
+      ShowInfo("Group removed.");
     }
 
     private string GetParentMenuText(object sender)
@@ -435,7 +437,7 @@ namespace DailyEvents
     private void ShowInfo(string message)
     {
       if (trayIcon != null)
-        trayIcon.ShowBalloonTip(10000, "Info", message, ToolTipIcon.Info);
+        trayIcon.ShowBalloonTip(10000, "", message, ToolTipIcon.None);
     }
     
     private void ShowNetworkError(Exception ex)
