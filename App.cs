@@ -361,7 +361,7 @@ namespace DailyEvents
 
       Clipboard.SetText(code);
 
-      MessageBox.Show("Send this code to guests: " + code + "\n\nThe code was just copied to your clipboard.", "Invite People");
+      MessageBox.Show("Send this code to guests: " + code + ".\nThe code was just copied to your clipboard.", "Invite People");
     }
 
     private void OnRenameGroup(object sender, EventArgs e)
