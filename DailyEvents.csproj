@@ -54,6 +54,8 @@
     <Compile Include="Prompt.cs" />
     <Compile Include="Json.cs" />
     <Compile Include="Config.cs" />
+    <Compile Include="DateUtilsTest.cs" />
+    <Compile Include="JsonTest.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
