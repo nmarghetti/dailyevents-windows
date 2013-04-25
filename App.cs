@@ -8,7 +8,7 @@ namespace DailyEvents
   {
     static private readonly string LoggedUser = Environment.UserName;
 
-    static private readonly bool DebugEnabled = false;
+    static private readonly bool SkipTrayIcon = false;
 
     static private readonly short MaxGroups          = 5;
     static private readonly short GroupNameMaxLength = 30;
@@ -30,13 +30,13 @@ namespace DailyEvents
     {
       RebuildTrayMenu();
 
-      if (DebugEnabled)
-        SetUpDebug();
+      if (SkipTrayIcon)
+        InitToolStrip();
       else
         InitTrayIcon();
     }
 
-    private void SetUpDebug()
+    private void InitToolStrip()
     {
       Controls.Add(new ToolStrip() {
         ContextMenu = trayMenu
@@ -150,7 +150,7 @@ namespace DailyEvents
 
     protected override void OnLoad(EventArgs e)
     {
-      Visible = DebugEnabled;
+      Visible = SkipTrayIcon;
       ShowInTaskbar = false;
       base.OnLoad(e);
     }
@@ -237,7 +237,7 @@ namespace DailyEvents
 
     private void OnNewComment(object sender, EventArgs e)
     {
-      string comment = Prompt.ShowDialog("Add Comment", "Enter your comment:", CommentMaxLength);
+      string comment = Prompt.Show("Add Comment", "Enter your comment:", CommentMaxLength);
 
       if (comment.Length > 0)
       {
@@ -265,7 +265,7 @@ namespace DailyEvents
       if (!CanJoinOrCreateGroups())
         return;
       
-      string name = Prompt.ShowDialog("Create Group", "Enter the group's name:", GroupNameMaxLength);
+      string name = Prompt.Show("Create Group", "Enter the group's name:", GroupNameMaxLength);
       
       if (name.Length == 0)
         return;
@@ -307,12 +307,12 @@ namespace DailyEvents
       if (!CanJoinOrCreateGroups())
         return;
       
-      string code = Prompt.ShowDialog("Join Group", "Group code:", GroupCodeMaxLength);
+      string code = Prompt.Show("Join Group", "Group code:", GroupCodeMaxLength);
       
       if (code.Length == 0)
         return;
       
-      string name = Prompt.ShowDialog("Join Group", "Group name:", GroupNameMaxLength);
+      string name = Prompt.Show("Join Group", "Group name:", GroupNameMaxLength);
 
       if (name.Length == 0)
         return;
@@ -358,7 +358,7 @@ namespace DailyEvents
     private void OnInvitePeople(object sender, EventArgs e)
     {
       String name = GetParentMenuText(sender);
-      string code = GetGroupCode(name);
+      string code = GetGroupCode(name).ToUpper();
 
       Clipboard.SetText(code);
 
@@ -370,7 +370,7 @@ namespace DailyEvents
       String currentName = GetParentMenuText(sender);
       string code = GetGroupCode(currentName);
       
-      string newName = Prompt.ShowDialog("Rename Group", "Enter the group's new name:", GroupNameMaxLength);
+      string newName = Prompt.Show("Rename Group", "Enter the group's new name:", GroupNameMaxLength);
       
       dynamic groups = Settings.Groups;
       groups[code] = newName;
@@ -464,7 +464,7 @@ namespace DailyEvents
 
     private void OnAbout(object sender, EventArgs e)
     {
-      System.Diagnostics.Process.Start("https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=3NLLLDBPUFAT4&lc=FR&item_name=Tiago%20Fernandez&item_number=Daily%20Events&currency_code=EUR&bn=PP%2dDonationsBF%3abtn_donate_LG%2egif%3aNonHosted");
+      About.Show();
     }
 
     private void OnExit(object sender, EventArgs e)

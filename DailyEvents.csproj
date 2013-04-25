@@ -57,6 +57,7 @@
     <Compile Include="JsonTest.cs" />
     <Compile Include="AppInfo.cs" />
     <Compile Include="Settings.cs" />
+    <Compile Include="About.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

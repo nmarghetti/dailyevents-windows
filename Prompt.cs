@@ -6,7 +6,7 @@ namespace DailyEvents
 {
   static public class Prompt
   {
-    static public string ShowDialog(string title, string text, int maxLength)
+    static public string Show(string title, string text, int maxLength)
     {
       Form dialog = new Form()
       {
