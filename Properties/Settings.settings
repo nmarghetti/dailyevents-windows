@@ -2,9 +2,6 @@
 <SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="DailyEvents.Properties" GeneratedClassName="Settings">
   <Profiles />
   <Settings>
-    <Setting Name="ApiEntryPoint" Type="System.String" Scope="User">
-      <Value Profile="(Default)">http://dailyevents.cloudfoundry.com/api</Value>
-    </Setting>
     <Setting Name="Groups" Type="System.String" Scope="User">
       <Value Profile="(Default)">{}</Value>
     </Setting>

@@ -14,19 +14,6 @@
 
     [global::System.Configuration.UserScopedSettingAttribute()]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-    [global::System.Configuration.DefaultSettingValueAttribute("http://dailyevents.cloudfoundry.com/api")]
-    public string ApiEntryPoint
-    {
-      get {
-        return ((string)(this["ApiEntryPoint"]));
-      }
-      set {
-        this["ApiEntryPoint"] = value;
-      }
-    }
-    
-    [global::System.Configuration.UserScopedSettingAttribute()]
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Configuration.DefaultSettingValueAttribute("{}")]
     public string Groups
     {

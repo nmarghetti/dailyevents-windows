@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Net;
 using System.Text;
@@ -28,12 +29,16 @@ namespace DailyEvents
       
       HttpWebRequest request = WebRequest.Create(entryPoint + path) as HttpWebRequest;
       string response = null;
-      
+
+      Debug.WriteLine(request.RequestUri);
+
       using (HttpWebResponse webResponse = request.GetResponse() as HttpWebResponse)
       {
         StreamReader reader = new StreamReader(webResponse.GetResponseStream());
         response = reader.ReadToEnd();
       }
+      Debug.WriteLine(response);
+
       return Json.Deserialize(response);
     }
     
@@ -56,12 +61,16 @@ namespace DailyEvents
         post.Write(formData, 0, formData.Length);  
       }
       string response = null;
-      
+
+      Debug.WriteLine(request.RequestUri);
+
       using (HttpWebResponse webResponse = request.GetResponse() as HttpWebResponse)
       {  
         StreamReader reader = new StreamReader(webResponse.GetResponseStream());
         response = reader.ReadToEnd();
       }
+      Debug.WriteLine(response);
+
       return Json.Deserialize(response);
     }
     

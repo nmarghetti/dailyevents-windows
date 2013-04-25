@@ -109,6 +109,7 @@ namespace DailyEvents
       trayMenu.MenuItems.Add(BuildGroupsMenu());
 
       trayMenu.MenuItems.Add("-");
+      trayMenu.MenuItems.Add("About", OnAbout);
       trayMenu.MenuItems.Add("Exit", OnExit);
     }
 
@@ -116,7 +117,7 @@ namespace DailyEvents
     {
       MenuItem menu = new MenuItem("Groups");
 
-      dynamic joinedGroups = Config.Groups;
+      dynamic joinedGroups = Settings.Groups;
       short numberOfGroupsAdded = 0;
 
       foreach (var group in joinedGroups)
@@ -173,7 +174,7 @@ namespace DailyEvents
           if (IsCurrentGroupSet())
           {
             SetLoadingIcon();
-            dynamic groups = api.GetGroup(Config.CurrentGroup);
+            dynamic groups = api.GetGroup(Settings.CurrentGroup);
             SetAppIcon();
 
             RebuildTrayMenu(groups["participants"], groups["comments"]);
@@ -199,7 +200,7 @@ namespace DailyEvents
       try
       {
         SetLoadingIcon();
-        api.RSVP(Config.CurrentGroup, LoggedUser, "yes");
+        api.RSVP(Settings.CurrentGroup, LoggedUser, "yes");
         SetAppIcon();
 
         ShowInfo("Attendance confirmed!");
@@ -219,7 +220,7 @@ namespace DailyEvents
       try
       {
         SetLoadingIcon();
-        api.RSVP(Config.CurrentGroup, LoggedUser, "no");
+        api.RSVP(Settings.CurrentGroup, LoggedUser, "no");
         SetAppIcon();
 
         ShowInfo("Attendance cancelled.");
@@ -243,7 +244,7 @@ namespace DailyEvents
         try
         {
           SetLoadingIcon();
-          api.AddComment(Config.CurrentGroup, LoggedUser, comment);
+          api.AddComment(Settings.CurrentGroup, LoggedUser, comment);
           SetAppIcon();
 
           ShowInfo("Comment added.");
@@ -269,7 +270,7 @@ namespace DailyEvents
       if (name.Length == 0)
         return;
       
-      if (Config.Groups.ContainsValue(name))
+      if (Settings.Groups.ContainsValue(name))
       {
         MessageBox.Show("A group named '" + name + "' already exists, please enter another name.", "Existing Group");
         OnCreateGroup(sender, e);
@@ -282,11 +283,11 @@ namespace DailyEvents
           string code = api.CreateGroup();
           SetAppIcon();
 
-          dynamic groups = Config.Groups;
+          dynamic groups = Settings.Groups;
           groups[code] = name;
           
-          Config.Groups = groups;
-          Config.CurrentGroup = code;
+          Settings.Groups = groups;
+          Settings.CurrentGroup = code;
           
           ShowInfo("Group created!");
         }
@@ -316,7 +317,7 @@ namespace DailyEvents
       if (name.Length == 0)
         return;
 
-      if (Config.Groups.ContainsValue(name))
+      if (Settings.Groups.ContainsValue(name))
       {
         MessageBox.Show("A group named '" + name + "' already exists, please enter another name.", "Existing Group");
         OnJoinGroup(sender, e);
@@ -327,11 +328,11 @@ namespace DailyEvents
         {
           SetLoadingIcon();
 
-          dynamic groups = Config.Groups;
+          dynamic groups = Settings.Groups;
           groups [code] = name;
           
-          Config.Groups = groups;
-          Config.CurrentGroup = code;
+          Settings.Groups = groups;
+          Settings.CurrentGroup = code;
           
           ShowInfo("Joined group!");
         }
@@ -349,7 +350,7 @@ namespace DailyEvents
     private void OnSwitchToGroup(object sender, EventArgs e)
     {
       String name = GetParentMenuText(sender);
-      Config.CurrentGroup = GetGroupCode(name);
+      Settings.CurrentGroup = GetGroupCode(name);
 
       ShowInfo("Switched group.");
     }
@@ -371,10 +372,10 @@ namespace DailyEvents
       
       string newName = Prompt.ShowDialog("Rename Group", "Enter the group's new name:", GroupNameMaxLength);
       
-      dynamic groups = Config.Groups;
+      dynamic groups = Settings.Groups;
       groups[code] = newName;
       
-      Config.Groups = groups;
+      Settings.Groups = groups;
 
       ShowInfo("Group renamed.");
     }
@@ -384,13 +385,13 @@ namespace DailyEvents
       String name = GetParentMenuText(sender);
       string code = GetGroupCode(name);
 
-      dynamic groups = Config.Groups;
+      dynamic groups = Settings.Groups;
       groups.Remove(code);
       
-      Config.Groups = groups;
+      Settings.Groups = groups;
 
-      if (Config.CurrentGroup == code)
-        Config.CurrentGroup = "";
+      if (Settings.CurrentGroup == code)
+        Settings.CurrentGroup = "";
 
       ShowInfo("Group removed.");
     }
@@ -402,7 +403,7 @@ namespace DailyEvents
 
     private bool CanJoinOrCreateGroups()
     {
-      bool maxGroupsReached = Config.Groups.Count >= MaxGroups;
+      bool maxGroupsReached = Settings.Groups.Count >= MaxGroups;
       
       if (maxGroupsReached)
       {
@@ -413,18 +414,19 @@ namespace DailyEvents
 
     private bool IsCurrentGroupSet()
     {
-      string currentGroup = Config.CurrentGroup;
-      return currentGroup.Length > 0 && Config.Groups.ContainsKey(currentGroup);
+      string currentGroup = Settings.CurrentGroup;
+      return currentGroup.Length > 0 && Settings.Groups.ContainsKey(currentGroup);
     }
 
     private string GetCurrentGroupName()
     {
-      return Config.Groups[Config.CurrentGroup];
+      string code = Settings.CurrentGroup;
+      return Settings.Groups[code];
     }
 
     private string GetGroupCode(string name)
     {
-      foreach (var group in Config.Groups)
+      foreach (var group in Settings.Groups)
       {
         if (group.Value == name)
         {
@@ -459,7 +461,12 @@ namespace DailyEvents
       if (trayIcon != null)
         trayIcon.Icon = new Icon(SystemIcons.Question, 40, 40);
     }
-    
+
+    private void OnAbout(object sender, EventArgs e)
+    {
+      System.Diagnostics.Process.Start("https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=3NLLLDBPUFAT4&lc=FR&item_name=Tiago%20Fernandez&item_number=Daily%20Events&currency_code=EUR&bn=PP%2dDonationsBF%3abtn_donate_LG%2egif%3aNonHosted");
+    }
+
     private void OnExit(object sender, EventArgs e)
     {
       Application.Exit();

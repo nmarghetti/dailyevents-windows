@@ -53,9 +53,10 @@
     <Compile Include="Properties\Settings.Designer.cs" />
     <Compile Include="Prompt.cs" />
     <Compile Include="Json.cs" />
-    <Compile Include="Config.cs" />
     <Compile Include="DateUtilsTest.cs" />
     <Compile Include="JsonTest.cs" />
+    <Compile Include="AppInfo.cs" />
+    <Compile Include="Settings.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
