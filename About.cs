@@ -14,7 +14,7 @@ namespace DailyEvents
         FormBorderStyle = FormBorderStyle.FixedSingle,
         MaximizeBox     = false,
         Width           = 390,
-        Height          = 240,
+        Height          = 200,
         Text            = "About"
       };
 
@@ -24,10 +24,10 @@ namespace DailyEvents
         Top    = 20,
         Width  = 370,
         Height = 100,
-        Text   = "Daily Events for Windows is brought to you by Tiago Fernandez.\n\n" +
+        Text   = "Daily Events v" + AppInfo.CurrentVersion + " is brought to you by Tiago Fernandez.\n\n" +
                  "This app has been developed entirely on my wife's \"budget\" so far, " +
                  "so please consider donating to actually buy me some extra time to keep " +
-                 "working on it.\n\nThanks! :)"
+                 "working on it.\n\nThanks!"
       };
 
       Button feedbackButton = new Button()
@@ -85,23 +85,11 @@ namespace DailyEvents
         dialog.Close();
       };
 
-      Label infoLabel = new Label()
-      {
-        Left      = 15,
-        Top       = 170,
-        Width     = 370,
-        Height    = 30,
-        ForeColor = Color.Gray,
-        Text      = "Version : " + AppInfo.CurrentVersion + "\n" +
-                    "Engine  : " + Environment.Version
-      };
-
       dialog.Controls.Add(textLabel);
       dialog.Controls.Add(feedbackButton);
       dialog.Controls.Add(websiteButton);
       dialog.Controls.Add(donateButton);
       dialog.Controls.Add(closeButton);
-      dialog.Controls.Add(infoLabel);
       dialog.ShowDialog();
     }
   }
