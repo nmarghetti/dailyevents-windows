@@ -17,13 +17,33 @@ namespace DailyEvents
       return info;
     }
 
-    static public int LatestVersion
+    static public string CurrentVersion
     {
       get {
-        string version = GetInfo()["windows"]["latest_version"];
-        int versionNumber = 0;
-        Int32.TryParse(version.Replace(".", ""), out versionNumber);
-        return versionNumber;
+        return "1.0.0"; // TODO Investigate why Application.ProductVersion does not work
+      }
+    }
+
+    static public int CurrentVersionNumber
+    {
+      get {
+        string version = CurrentVersion;
+        return StringVersionToInt(version);
+      }
+    }
+    
+    static public string LatestVersion
+    {
+      get {
+        return GetInfo()["windows"]["latest_version"];
+      }
+    }
+
+    static public int LatestVersionNumber
+    {
+      get {
+        string version = LatestVersion;
+        return StringVersionToInt(version);
       }
     }
 
@@ -32,6 +52,13 @@ namespace DailyEvents
       get {
         return GetInfo()["backend_url"] + "/api";
       }
+    }
+
+    static private int StringVersionToInt(string version)
+    {
+      int number = 0;
+      Int32.TryParse(version.Replace(".", ""), out number);
+      return number;
     }
   }
 }

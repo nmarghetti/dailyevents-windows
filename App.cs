@@ -358,7 +358,7 @@ namespace DailyEvents
     private void OnInvitePeople(object sender, EventArgs e)
     {
       String name = GetParentMenuText(sender);
-      string code = GetGroupCode(name).ToUpper();
+      string code = GetGroupCode(name);
 
       Clipboard.SetText(code);
 
@@ -407,7 +407,7 @@ namespace DailyEvents
       
       if (maxGroupsReached)
       {
-        MessageBox.Show("Sorry, this client is limited to " + MaxGroups + " groups.", "Max Groups Reached");
+        MessageBox.Show("Sorry, this client is limited to " + MaxGroups + " groups for now.", "Max Groups Reached");
       }
       return !maxGroupsReached;
     }
