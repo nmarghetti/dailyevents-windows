@@ -9,6 +9,7 @@
     <OutputType>WinExe</OutputType>
     <RootNamespace>DailyEvents</RootNamespace>
     <AssemblyName>DailyEvents</AssemblyName>
+    <ReleaseVersion>0.9.0</ReleaseVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
     <DebugSymbols>True</DebugSymbols>

@@ -20,6 +20,8 @@ namespace DailyEvents
     private readonly ContextMenu trayMenu = new ContextMenu();
     private NotifyIcon trayIcon;
 
+    private bool newVersionBalloonShown = false;
+
     [STAThread]
     static public void Main()
     {
@@ -51,7 +53,15 @@ namespace DailyEvents
       trayIcon.ContextMenu = trayMenu;
       trayIcon.MouseDown += OnRefreshGroup;
       trayIcon.Visible = true;
+      trayIcon.BalloonTipClicked += OnBalloonTipClicked;
+
       SetAppIcon();
+
+      if (AppInfo.CurrentVersionNumber < AppInfo.LatestVersionNumber)
+      {
+        newVersionBalloonShown = true;
+        ShowInfo("New version available, grab it while it's hot!");
+      }
     }
 
     private void RebuildTrayMenu()
@@ -460,6 +470,17 @@ namespace DailyEvents
     {
       if (trayIcon != null)
         trayIcon.Icon = new Icon(SystemIcons.Question, 40, 40);
+    }
+
+    private void OnBalloonTipClicked(object sender, EventArgs e)
+    {
+      bool mouseButtonLeft = ((Control.MouseButtons & MouseButtons.Left) == MouseButtons.Left);
+
+      if (newVersionBalloonShown && mouseButtonLeft)
+      {
+        System.Diagnostics.Process.Start("https://dl.dropboxusercontent.com/u/1210246/DailyEvents/download/DailyEvents-windows.zip");
+        newVersionBalloonShown = false;
+      }
     }
 
     private void OnAbout(object sender, EventArgs e)

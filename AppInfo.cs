@@ -20,7 +20,7 @@ namespace DailyEvents
     static public string CurrentVersion
     {
       get {
-        return "1.0.0"; // TODO Investigate why Application.ProductVersion does not work
+        return "0.9.0"; // Application.ProductVersion
       }
     }
 
