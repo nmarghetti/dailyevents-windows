@@ -8,6 +8,7 @@
 *.sln.docstates
 
 Installer/*.exe
+Installer/*.zip
 
 # Build results
 
