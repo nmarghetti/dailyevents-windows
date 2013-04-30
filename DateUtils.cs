@@ -13,8 +13,21 @@ namespace DailyEvents
 
     static public string FormatTime(string timestamp)
     {
-      DateTime dateTime = Jan1st1970.AddSeconds(Math.Round(Convert.ToDouble(timestamp) / 1000)).ToLocalTime();
+      DateTime dateTime = ToDateTime(timestamp);
       return dateTime.ToString("HH:mm");
+    }
+
+    static public int GetUtcOffsetInMinutes(string timestamp)
+    {
+      DateTime dateTime = ToDateTime(timestamp);
+      TimeSpan timeSpan = TimeZone.CurrentTimeZone.GetUtcOffset(dateTime);
+      return timeSpan.Negate().Hours * 60;
+    }
+
+    static private DateTime ToDateTime(string timestamp)
+    {
+      double seconds = Math.Round(Convert.ToDouble(timestamp) / 1000);
+      return Jan1st1970.AddSeconds(seconds).ToLocalTime();
     }
   }
 }
