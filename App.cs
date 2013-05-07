@@ -69,8 +69,9 @@ namespace DailyEvents
       RebuildTrayMenu(null, null);
     }
 
-    private void RebuildTrayMenu(dynamic participants, dynamic comments)
+    private void RebuildTrayMenu(dynamic statuses, dynamic comments)
     {
+      Invalidate();
       trayMenu.MenuItems.Clear();
 
       if (IsCurrentGroupSet())
@@ -78,10 +79,11 @@ namespace DailyEvents
         trayMenu.MenuItems.Add(GetCurrentGroupName());
         trayMenu.MenuItems.Add("-");
 
-        if (participants != null && participants.Count > 0)
+        if (statuses != null && statuses.Length > 0)
         {
-          foreach (var participant in participants.Keys)
+          foreach (var status in statuses)
           {
+            string participant = status["participant"];
             trayMenu.MenuItems.Add(participant);
           }
         }
@@ -96,17 +98,16 @@ namespace DailyEvents
         trayMenu.MenuItems.Add("Add comment", OnNewComment);
         trayMenu.MenuItems.Add("-");
 
-        if (comments != null && comments.Count > 0)
+        if (comments != null && comments.Length > 0)
         {
-          foreach (var timestamp in comments.Keys)
+          foreach (var comment in comments)
           {
-            dynamic entry = comments [timestamp];
+            string participant = comment["participant"];
+            string commentText = comment["comment"];
+            string timestamp   = comment["timestamp"];
+            string localTime   = DateUtils.FormatTime(timestamp);
 
-            string user = entry["user"];
-            string comment = entry["comment"];
-            string localTime = DateUtils.FormatTime(timestamp);
-
-            trayMenu.MenuItems.Add(localTime + " " + user + ": " + comment);
+            trayMenu.MenuItems.Add(localTime + " " + participant + ": " + commentText);
           }
           trayMenu.MenuItems.Add("-");
         }
@@ -184,10 +185,10 @@ namespace DailyEvents
           if (IsCurrentGroupSet())
           {
             SetLoadingIcon();
-            dynamic groups = api.GetGroup(Settings.CurrentGroup);
+            dynamic groups = api.GetDetails(Settings.CurrentGroup);
             SetAppIcon();
 
-            RebuildTrayMenu(groups["participants"], groups["comments"]);
+            RebuildTrayMenu(groups["statuses"], groups["comments"]);
           }
           else
           {
@@ -210,7 +211,7 @@ namespace DailyEvents
       try
       {
         SetLoadingIcon();
-        api.RSVP(Settings.CurrentGroup, LoggedUser, "yes");
+        api.SetStatus(Settings.CurrentGroup, LoggedUser, "yes");
         SetAppIcon();
 
         ShowInfo("Attendance confirmed!");
@@ -230,7 +231,7 @@ namespace DailyEvents
       try
       {
         SetLoadingIcon();
-        api.RSVP(Settings.CurrentGroup, LoggedUser, "no");
+        api.SetStatus(Settings.CurrentGroup, LoggedUser, "no");
         SetAppIcon();
 
         ShowInfo("Attendance cancelled.");

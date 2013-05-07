@@ -50,7 +50,7 @@ namespace DailyEvents
     static public string ApiEntryPoint
     {
       get {
-        return GetInfo()["backend_url"] + "/api";
+        return "https://api.parse.com/1/functions/";
       }
     }
 

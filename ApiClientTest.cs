@@ -6,8 +6,6 @@ namespace DailyEvents
   [TestFixture()]
   public class ApiClientTest
   {
-    private static readonly string TestGroup = "BR4ZUC4S";
-
     private readonly ApiClient api;
 
     public ApiClientTest()
@@ -22,36 +20,28 @@ namespace DailyEvents
     }
 
     [Test()]
-    public void should_join_and_quit_todays_event()
+    public void should_join_and_quit_event()
     {
-      api.RSVP(TestGroup, "tfernandez", "yes");
-      api.RSVP(TestGroup, "ewatanabe", "yes");
-      api.RSVP(TestGroup, "gliguori", "no");
+      string group = api.CreateGroup();
 
-      dynamic participants = api.GetParticipants(TestGroup);
+      api.SetStatus(group, "tfernandez", "yes");
+      api.SetStatus(group, "ewatanabe", "yes");
+      api.SetStatus(group, "gliguori", "no");
 
-      Assert.AreEqual(2, participants.Count);
-      Assert.IsTrue(participants.ContainsKey("tfernandez"));
-      Assert.IsTrue(participants.ContainsKey("ewatanabe"));
+      dynamic statuses = api.GetDetails(group)["statuses"];
+      Assert.AreEqual(2, statuses.Length);
     }
 
     [Test()]
-    public void should_add_comments_to_todays_event()
+    public void should_add_comments_to_event()
     {
-      api.AddComment(TestGroup, "ewatanabe", "bora?");
-      api.AddComment(TestGroup, "tfernandez", "saindo...");
+      string group = api.CreateGroup();
 
-      dynamic comments = api.GetComments(TestGroup);
-      Assert.IsTrue(comments.Count >= 2);
-    }
+      api.AddComment(group, "ewatanabe", "bora?");
+      api.AddComment(group, "tfernandez", "saindo...");
 
-    [Test()]
-    public void should_get_participants_and_comments_for_todays_event()
-    {
-      dynamic group = api.GetGroup(TestGroup);
-      Assert.AreEqual(2, group.Count);
-      Assert.AreEqual(2, group["participants"].Count);
-      Assert.IsTrue(group["comments"].Count >= 2);
+      dynamic comments = api.GetDetails(group)["comments"];
+      Assert.AreEqual(2, comments.Length);
     }
   }
 }

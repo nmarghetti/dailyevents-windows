@@ -7,54 +7,62 @@ namespace DailyEvents
   {
     private readonly HttpClient http;
 
+    private readonly Dictionary<string, string> developmentHeaders = new Dictionary<string, string>() {
+      { "X-Parse-Application-Id", "uI57rIax4Tk31J5dI9EUKR3dCDhaeNphH2D0MmG1" },
+      { "X-Parse-REST-API-Key", "kNPRXb7CGw0wkYiK9DtBnGWAtOgdyX6yqQqLMY2X" }
+    };
+    
+    private readonly Dictionary<string, string> productionHeaders = new Dictionary<string, string>() {
+      { "X-Parse-Application-Id", "Puuy52CoyWk3c5yOIubf3NPecyNdrNw7h4AAU7Qt" },
+      { "X-Parse-REST-API-Key", "eqWvo2PKDxQNnUPvXntTVIg8qYwJFVaPGwVXYtyy" }
+    };
+    
     public ApiClient()
     {
-      this.http = new HttpClient(AppInfo.ApiEntryPoint);
+      this.http = new HttpClient(AppInfo.ApiEntryPoint, developmentHeaders);
     }
 
     public dynamic CreateGroup()
     {
-      dynamic result = http.Post("/groups");
-      return result["id"];
-    }
-
-    public dynamic GetGroup(string group)
-    {
-      string url = CreateUrl("/groups/", group);
-      return http.Get(url);
-    }
-
-    public dynamic RSVP(string group, string user, string reply)
-    {
-      string url = CreateUrl("/rsvp/", group);
-      return http.Post(url, new Dictionary<string, string>() {
-        { "user", user }, { "reply", reply }
-      });
-    }
-
-    public dynamic GetParticipants(string group)
-    {
-      string url = CreateUrl("/participants/", group);
-      return http.Get(url);
-    }
-
-    public dynamic AddComment(string group, string user, string comment)
-    {
-      string url = CreateUrl("/comments/", group);
-      return http.Post(url, new Dictionary<string, string>() {
-        { "user", user }, { "comment", comment }
-      });
+      dynamic response = http.Post("createGroup");
+      return response["result"]["code"];
     }
     
-    public dynamic GetComments(string group)
+    public dynamic SetStatus(string group, string participant, string reply)
     {
-      string url = CreateUrl("/comments/", group);
-      return http.Get(url);
+      dynamic response = http.Post("setStatus", RequestParameters(new Dictionary<string, string>() {
+        { "group", group }, { "participant", participant }, { "reply", reply }
+      }));
+      return response;
+    }
+    
+    public dynamic AddComment(string group, string participant, string comment)
+    {
+      dynamic response = http.Post("addComment", RequestParameters(new Dictionary<string, string>() {
+        { "group", group }, { "participant", participant }, { "comment", comment }
+      }));
+      return response;
     }
 
-    private string CreateUrl(string path, string group)
+    public dynamic GetDetails(string group)
     {
-      return path + group + "?timestamp=" + DateUtils.CurrentTimeMillis();
+      dynamic response = http.Post("getDetails", RequestParameters(new Dictionary<string, string>() {
+        { "group", group }
+      }));
+      return response["result"];
+    }
+    
+    private dynamic RequestParameters(Dictionary<string, string> requestParams)
+    {
+      Dictionary<string, string> parameters = new Dictionary<string, string>() {
+        { "timestamp", DateUtils.CurrentTimeMillis() },
+        { "timezone", "-120" } // TODO Fix this
+      };
+      foreach (var requestParam in requestParams)
+      {
+        parameters.Add(requestParam.Key, requestParam.Value);
+      }
+      return parameters;
     }
   }
 }

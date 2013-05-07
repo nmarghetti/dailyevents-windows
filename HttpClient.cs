@@ -11,10 +11,14 @@ namespace DailyEvents
   public class HttpClient
   {
     private readonly string entryPoint;
+    private readonly Dictionary<string, string> customHeaders;
 
-    public HttpClient(string entryPoint)
+    public HttpClient(string entryPoint) : this(entryPoint, new Dictionary<string, string>()) {}
+
+    public HttpClient(string entryPoint, Dictionary<string, string> customHeaders)
     {
-      this.entryPoint = entryPoint;
+      this.entryPoint    = entryPoint;
+      this.customHeaders = customHeaders;
     }
     
     public dynamic Get(string path)
@@ -50,12 +54,16 @@ namespace DailyEvents
     public dynamic Post(string path, Dictionary<string, string> parameters)
     {
       HttpWebRequest request = WebRequest.Create(new Uri(entryPoint + path)) as HttpWebRequest;
-      request.ContentType = "application/x-www-form-urlencoded";
+      request.ContentType = "application/json";
       request.Method = "POST";
-      
-      byte[] formData = UTF8Encoding.UTF8.GetBytes(ToStringParameters(parameters));
+
+      byte[] formData = UTF8Encoding.UTF8.GetBytes(Json.Serialize(parameters));
       request.ContentLength = formData.Length;
       
+      foreach (var header in customHeaders)
+      {
+        request.Headers[header.Key] = header.Value;
+      }
       using (Stream post = request.GetRequestStream())
       {  
         post.Write(formData, 0, formData.Length);  
