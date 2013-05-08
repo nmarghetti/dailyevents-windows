@@ -20,10 +20,10 @@ namespace DailyEvents
     static public string CurrentGroup
     {
       get {
-        return Properties.Settings.Default.CurrentGroup.ToUpper();
+        return Properties.Settings.Default.CurrentGroup;
       }
       set {
-        Properties.Settings.Default.CurrentGroup = value.ToUpper();
+        Properties.Settings.Default.CurrentGroup = value;
         Properties.Settings.Default.Save();
       }
     }

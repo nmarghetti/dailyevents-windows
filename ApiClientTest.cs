@@ -1,5 +1,6 @@
 using NUnit.Framework;
 using System;
+using System.Collections.Generic;
 
 namespace DailyEvents
 {
@@ -14,34 +15,37 @@ namespace DailyEvents
     }
 
     [Test()]
-    public void should_create_a_group()
+    public void should_create_group()
     {
-      Assert.NotNull(api.CreateGroup());
+      string group = api.CreateGroup().id; 
+
+      Assert.NotNull(group);
+      Assert.NotNull(api.GetGroup(group).code);
     }
 
     [Test()]
-    public void should_join_and_quit_event()
+    public void should_confirm_and_cancel_attendance()
     {
-      string group = api.CreateGroup();
+      string group = api.CreateGroup().id;
 
       api.SetStatus(group, "tfernandez", "yes");
       api.SetStatus(group, "ewatanabe", "yes");
       api.SetStatus(group, "gliguori", "no");
 
-      dynamic statuses = api.GetDetails(group)["statuses"];
-      Assert.AreEqual(2, statuses.Length);
+      List<Status> statuses = api.GetGroupDetails(group).statuses;
+      Assert.AreEqual(2, statuses.Count);
     }
 
     [Test()]
-    public void should_add_comments_to_event()
+    public void should_add_comments()
     {
-      string group = api.CreateGroup();
+      string group = api.CreateGroup().id;
 
-      api.AddComment(group, "ewatanabe", "bora?");
-      api.AddComment(group, "tfernandez", "saindo...");
+      api.AddComment(group, "ewatanabe", "first comment");
+      api.AddComment(group, "tfernandez", "second comment");
 
-      dynamic comments = api.GetDetails(group)["comments"];
-      Assert.AreEqual(2, comments.Length);
+      List<Comment> comments = api.GetGroupDetails(group).comments;
+      Assert.AreEqual(2, comments.Count);
     }
   }
 }

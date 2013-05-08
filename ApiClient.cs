@@ -1,62 +1,90 @@
 using System;
 using System.Collections.Generic;
+using System.Web.Script.Serialization;
 
 namespace DailyEvents
 {
   public class ApiClient
   {
-    private readonly HttpClient http;
-
-    private readonly Dictionary<string, string> developmentHeaders = new Dictionary<string, string>() {
+    private readonly Dictionary<string, string> customHeaders = new Dictionary<string, string>() {
+      /* Development */
       { "X-Parse-Application-Id", "uI57rIax4Tk31J5dI9EUKR3dCDhaeNphH2D0MmG1" },
       { "X-Parse-REST-API-Key", "kNPRXb7CGw0wkYiK9DtBnGWAtOgdyX6yqQqLMY2X" }
-    };
-    
-    private readonly Dictionary<string, string> productionHeaders = new Dictionary<string, string>() {
+
+      /* Production
       { "X-Parse-Application-Id", "Puuy52CoyWk3c5yOIubf3NPecyNdrNw7h4AAU7Qt" },
-      { "X-Parse-REST-API-Key", "eqWvo2PKDxQNnUPvXntTVIg8qYwJFVaPGwVXYtyy" }
+      { "X-Parse-REST-API-Key", "eqWvo2PKDxQNnUPvXntTVIg8qYwJFVaPGwVXYtyy" } */
     };
-    
+
+    private readonly HttpClient http;
+
     public ApiClient()
     {
-      this.http = new HttpClient(AppInfo.ApiEntryPoint, developmentHeaders);
+      this.http = new HttpClient(AppInfo.ApiEntryPoint, customHeaders);
     }
 
-    public dynamic CreateGroup()
+    public Result CreateGroup()
     {
-      dynamic response = http.Post("createGroup");
-      return response["result"]["code"];
+      Result result = CallFunction("createGroup");
+      return result;
     }
-    
-    public dynamic SetStatus(string group, string participant, string reply)
+
+    public Result SetStatus(string group, string participant, string reply)
     {
-      dynamic response = http.Post("setStatus", RequestParameters(new Dictionary<string, string>() {
+      Result result = CallFunction("setStatus", TemporalParameters(new Dictionary<string, string>() {
         { "group", group }, { "participant", participant }, { "reply", reply }
       }));
-      return response;
+      return result;
     }
     
-    public dynamic AddComment(string group, string participant, string comment)
+    public Result AddComment(string group, string participant, string comment)
     {
-      dynamic response = http.Post("addComment", RequestParameters(new Dictionary<string, string>() {
+      Result result = CallFunction("addComment", TemporalParameters(new Dictionary<string, string>() {
         { "group", group }, { "participant", participant }, { "comment", comment }
       }));
-      return response;
+      return result;
     }
 
-    public dynamic GetDetails(string group)
+    public Result GetGroup(string id)
     {
-      dynamic response = http.Post("getDetails", RequestParameters(new Dictionary<string, string>() {
+      Result result = CallFunction("getGroup", new Dictionary<string, string>() {
+        { "group", id }
+      });
+      return result;
+    }
+
+    public Result GetGroupDetails(string group)
+    {
+      Result result = CallFunction("getGroupDetails", TemporalParameters(new Dictionary<string, string>() {
         { "group", group }
       }));
-      return response["result"];
+      List<Status> statuses = result.statuses;
+      foreach (Status status in statuses.FindAll(s => s.reply == "no"))
+      {
+        statuses.Remove(status);
+      }
+      return result;
     }
-    
-    private dynamic RequestParameters(Dictionary<string, string> requestParams)
+
+    private Result CallFunction(string path)
     {
+      return CallFunction(path, new Dictionary<string, string>());
+    }
+
+    private Result CallFunction(string name, Dictionary<string, string> parameters)
+    {
+      string response = http.Post(name, parameters);
+      return Deserialize(response);
+    }
+
+    private dynamic TemporalParameters(Dictionary<string, string> requestParams)
+    {
+      string timestamp = DateUtils.CurrentTimeMillis();
+      string timezone  = DateUtils.GetUtcOffsetInMinutes(timestamp);
+
       Dictionary<string, string> parameters = new Dictionary<string, string>() {
-        { "timestamp", DateUtils.CurrentTimeMillis() },
-        { "timezone", "-120" } // TODO Fix this
+        { "timestamp", timestamp },
+        { "timezone", timezone }
       };
       foreach (var requestParam in requestParams)
       {
@@ -64,5 +92,42 @@ namespace DailyEvents
       }
       return parameters;
     }
+
+    private Result Deserialize(string json)
+    {
+      return Json.Deserialize<RootObject>(json).result;
+    }
+  }
+
+  // cf. http://json2csharp.com/
+  
+  public class Status
+  {
+    public string participant { get; set; }
+    public string reply { get; set; }
+    public string timestamp { get; set; }
+    public string timezone { get; set; }
+  }
+  
+  public class Comment
+  {
+    public string participant { get; set; }
+    public string comment { get; set; }
+    public string timestamp { get; set; }
+    public string timezone { get; set; }
+  }
+  
+  public class Result
+  {
+    public string id { get; set; }
+    public string code { get; set; }
+    
+    public List<Status> statuses { get; set; }
+    public List<Comment> comments { get; set; }
+  }
+  
+  public class RootObject
+  {
+    public Result result { get; set; }
   }
 }

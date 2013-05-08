@@ -7,15 +7,20 @@ namespace DailyEvents
   {
     static public string Serialize(dynamic dictionary)
     {
-      return NewSerializer().Serialize(dictionary);
+      return Serializer().Serialize(dictionary);
     }
 
     static public dynamic Deserialize(string json)
     {
-      return NewSerializer().Deserialize<dynamic>(json);
+      return Serializer().Deserialize<dynamic>(json);
+    }
+    
+    static public dynamic Deserialize<type>(string json)
+    {
+      return Serializer().Deserialize<type>(json);
     }
 
-    static private JavaScriptSerializer NewSerializer()
+    static public JavaScriptSerializer Serializer()
     {
       return new JavaScriptSerializer();
     }

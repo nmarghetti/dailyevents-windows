@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
 
@@ -8,7 +9,7 @@ namespace DailyEvents
   {
     static private readonly string LoggedUser = Environment.UserName;
 
-    static private readonly bool SkipTrayIcon = false;
+    static private readonly bool SkipTrayIcon = true;
 
     static private readonly short MaxGroups          = 5;
     static private readonly short GroupNameMaxLength = 30;
@@ -69,7 +70,7 @@ namespace DailyEvents
       RebuildTrayMenu(null, null);
     }
 
-    private void RebuildTrayMenu(dynamic statuses, dynamic comments)
+    private void RebuildTrayMenu(List<Status> statuses, List<Comment> comments)
     {
       Invalidate();
       trayMenu.MenuItems.Clear();
@@ -79,11 +80,11 @@ namespace DailyEvents
         trayMenu.MenuItems.Add(GetCurrentGroupName());
         trayMenu.MenuItems.Add("-");
 
-        if (statuses != null && statuses.Length > 0)
+        if (statuses != null && statuses.Count > 0)
         {
           foreach (var status in statuses)
           {
-            string participant = status["participant"];
+            string participant = status.participant;
             trayMenu.MenuItems.Add(participant);
           }
         }
@@ -98,13 +99,13 @@ namespace DailyEvents
         trayMenu.MenuItems.Add("Add comment", OnNewComment);
         trayMenu.MenuItems.Add("-");
 
-        if (comments != null && comments.Length > 0)
+        if (comments != null && comments.Count > 0)
         {
           foreach (var comment in comments)
           {
-            string participant = comment["participant"];
-            string commentText = comment["comment"];
-            string timestamp   = comment["timestamp"];
+            string participant = comment.participant;
+            string commentText = comment.comment;
+            string timestamp   = comment.timestamp;
             string localTime   = DateUtils.FormatTime(timestamp);
 
             trayMenu.MenuItems.Add(localTime + " " + participant + ": " + commentText);
@@ -185,10 +186,10 @@ namespace DailyEvents
           if (IsCurrentGroupSet())
           {
             SetLoadingIcon();
-            dynamic groups = api.GetDetails(Settings.CurrentGroup);
+            Result details = api.GetGroupDetails(Settings.CurrentGroup);
             SetAppIcon();
 
-            RebuildTrayMenu(groups["statuses"], groups["comments"]);
+            RebuildTrayMenu(details.statuses, details.comments);
           }
           else
           {
@@ -291,14 +292,14 @@ namespace DailyEvents
         try
         {
           SetLoadingIcon();
-          string code = api.CreateGroup();
+          string id = api.CreateGroup().id;
           SetAppIcon();
 
           dynamic groups = Settings.Groups;
-          groups[code] = name;
+          groups[id] = name;
           
           Settings.Groups = groups;
-          Settings.CurrentGroup = code;
+          Settings.CurrentGroup = id;
           
           ShowInfo("Group created!");
         }
@@ -360,31 +361,46 @@ namespace DailyEvents
 
     private void OnSwitchToGroup(object sender, EventArgs e)
     {
-      String name = GetParentMenuText(sender);
-      Settings.CurrentGroup = GetGroupCode(name);
+      string name = GetParentMenuText(sender);
+      Settings.CurrentGroup = GetGroupId(name);
 
       ShowInfo("Switched group.");
     }
 
     private void OnInvitePeople(object sender, EventArgs e)
     {
-      String name = GetParentMenuText(sender);
-      string code = GetGroupCode(name);
+      string groupName = GetParentMenuText(sender);
+      string groupId   = GetGroupId(groupName);
 
-      Clipboard.SetText(code);
+      try
+      {
+        SetLoadingIcon();
+        string code = api.GetGroup(groupId).code;
+        SetAppIcon();
 
-      MessageBox.Show("Send this code to guests: " + code + ".\nThe code was just copied to your clipboard.", "Invite People");
+        Clipboard.SetText(code);
+        
+        MessageBox.Show("Send this code to guests: " + code + ".\nThe code was just copied to your clipboard.", "Invite People");
+      }
+      catch (Exception ex)
+      {
+        ShowNetworkError(ex);
+      }
+      finally
+      {
+        SetAppIcon();
+      }
     }
 
     private void OnRenameGroup(object sender, EventArgs e)
     {
-      String currentName = GetParentMenuText(sender);
-      string code = GetGroupCode(currentName);
+      string currentName = GetParentMenuText(sender);
+      string groupId     = GetGroupId(currentName);
       
       string newName = Prompt.Show("Rename Group", "Enter the group's new name:", GroupNameMaxLength);
       
-      dynamic groups = Settings.Groups;
-      groups[code] = newName;
+      dynamic groups  = Settings.Groups;
+      groups[groupId] = newName;
       
       Settings.Groups = groups;
 
@@ -393,15 +409,15 @@ namespace DailyEvents
 
     private void OnLeaveGroup(object sender, EventArgs e)
     {
-      String name = GetParentMenuText(sender);
-      string code = GetGroupCode(name);
+      string groupName = GetParentMenuText(sender);
+      string groupId   = GetGroupId(groupName);
 
       dynamic groups = Settings.Groups;
-      groups.Remove(code);
+      groups.Remove(groupId);
       
       Settings.Groups = groups;
 
-      if (Settings.CurrentGroup == code)
+      if (Settings.CurrentGroup == groupId)
         Settings.CurrentGroup = "";
 
       ShowInfo("Group removed.");
@@ -431,11 +447,11 @@ namespace DailyEvents
 
     private string GetCurrentGroupName()
     {
-      string code = Settings.CurrentGroup;
-      return Settings.Groups[code];
+      string groupId = Settings.CurrentGroup;
+      return Settings.Groups[groupId];
     }
 
-    private string GetGroupCode(string name)
+    private string GetGroupId(string name)
     {
       foreach (var group in Settings.Groups)
       {

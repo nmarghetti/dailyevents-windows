@@ -27,8 +27,12 @@ namespace DailyEvents
     public void should_get_utc_offset_in_minutes()
     {
       string timestamp = DateUtils.CurrentTimeMillis();
-      int utcOffset = DateUtils.GetUtcOffsetInMinutes(timestamp);
-      Assert.IsTrue(utcOffset != 0);
+      string utcOffset = DateUtils.GetUtcOffsetInMinutes(timestamp);
+      Assert.IsNotNullOrEmpty(utcOffset);
+
+      int minutes = 0;
+      Int32.TryParse(utcOffset, out minutes);
+      Assert.IsTrue(minutes != 0);
     }
   }
 }

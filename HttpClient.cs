@@ -21,12 +21,12 @@ namespace DailyEvents
       this.customHeaders = customHeaders;
     }
     
-    public dynamic Get(string path)
+    public string Get(string path)
     {
       return Get(path, new Dictionary<string, string>());
     }
     
-    public dynamic Get(string path, Dictionary<string, string> parameters)
+    public string Get(string path, Dictionary<string, string> parameters)
     {
       if (parameters.Count > 0)
         path += "?" + ToStringParameters(parameters);
@@ -43,15 +43,15 @@ namespace DailyEvents
       }
       Debug.WriteLine(response);
 
-      return Json.Deserialize(response);
+      return response;
     }
     
-    public dynamic Post(string path)
+    public string Post(string path)
     {
       return Post(path, new Dictionary<string, string>());
     }
     
-    public dynamic Post(string path, Dictionary<string, string> parameters)
+    public string Post(string path, Dictionary<string, string> parameters)
     {
       HttpWebRequest request = WebRequest.Create(new Uri(entryPoint + path)) as HttpWebRequest;
       request.ContentType = "application/json";
@@ -79,7 +79,7 @@ namespace DailyEvents
       }
       Debug.WriteLine(response);
 
-      return Json.Deserialize(response);
+      return response;
     }
     
     private string ToStringParameters(Dictionary<string, string> parameters)

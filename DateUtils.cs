@@ -17,11 +17,12 @@ namespace DailyEvents
       return dateTime.ToString("HH:mm");
     }
 
-    static public int GetUtcOffsetInMinutes(string timestamp)
+    static public string GetUtcOffsetInMinutes(string timestamp)
     {
       DateTime dateTime = ToDateTime(timestamp);
       TimeSpan timeSpan = TimeZone.CurrentTimeZone.GetUtcOffset(dateTime);
-      return timeSpan.Negate().Hours * 60;
+      int offset = timeSpan.Negate().Hours * 60;
+      return offset.ToString();
     }
 
     static private DateTime ToDateTime(string timestamp)
