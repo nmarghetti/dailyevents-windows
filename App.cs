@@ -9,7 +9,7 @@ namespace DailyEvents
   {
     static private readonly string LoggedUser = Environment.UserName;
 
-    static private readonly bool SkipTrayIcon = true;
+    static private readonly bool SkipTrayIcon = false;
 
     static private readonly short MaxGroups          = 5;
     static private readonly short GroupNameMaxLength = 30;
