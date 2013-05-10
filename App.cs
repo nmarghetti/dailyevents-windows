@@ -317,13 +317,18 @@ namespace DailyEvents
         SetLoadingIcon();
         string groupId = api.GetGroupByCode(code).id;
 
-        dynamic groups  = Settings.Groups;
-        groups[groupId] = name;
-        
-        Settings.Groups = groups;
-        Settings.CurrentGroup = groupId;
-        
-        ShowInfo("Group joined!");
+        if (groupId == null) {
+          MessageBox.Show("The entered code is invalid, please try again.", "Invalid Code");
+        }
+        else {
+          dynamic groups  = Settings.Groups;
+          groups[groupId] = name;
+          
+          Settings.Groups = groups;
+          Settings.CurrentGroup = groupId;
+          
+          ShowInfo("Joined group!");
+        }
       }
       catch (Exception ex)
       {
@@ -370,10 +375,13 @@ namespace DailyEvents
       string currentName = GetParentMenuText(sender);
       string groupId     = GetGroupId(currentName);
       
-      string newName = Prompt.Show("Rename Group", "The new name you want to use for this group:", GroupNameMaxLength);
+      string name = Prompt.Show("Rename Group", "The name you want to use for this group:", GroupNameMaxLength);
       
+      if (name.Length == 0)
+        return;
+
       dynamic groups  = Settings.Groups;
-      groups[groupId] = newName;
+      groups[groupId] = name;
       
       Settings.Groups = groups;
 

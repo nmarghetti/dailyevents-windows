@@ -22,7 +22,7 @@ namespace DailyEvents
       {
         Left  = 15,
         Top   = 20,
-        Width = 200,
+        Width = 280,
         Text  = text
       };
 
