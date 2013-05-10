@@ -32,7 +32,7 @@ namespace DailyEvents
       api.SetStatus(group, "ewatanabe", "yes");
       api.SetStatus(group, "gliguori", "no");
 
-      List<Status> statuses = api.GetGroupDetails(group).statuses;
+      List<Status> statuses = api.GetEvent(group).statuses;
       Assert.AreEqual(2, statuses.Count);
     }
 
@@ -44,7 +44,7 @@ namespace DailyEvents
       api.AddComment(group, "ewatanabe", "first comment");
       api.AddComment(group, "tfernandez", "second comment");
 
-      List<Comment> comments = api.GetGroupDetails(group).comments;
+      List<Comment> comments = api.GetEvent(group).comments;
       Assert.AreEqual(2, comments.Count);
     }
   }

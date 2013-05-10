@@ -186,7 +186,7 @@ namespace DailyEvents
           if (IsCurrentGroupSet())
           {
             SetLoadingIcon();
-            Result details = api.GetGroupDetails(Settings.CurrentGroup);
+            Result details = api.GetEvent(Settings.CurrentGroup);
             SetAppIcon();
 
             RebuildTrayMenu(details.statuses, details.comments);

@@ -53,9 +53,9 @@ namespace DailyEvents
       return result;
     }
 
-    public Result GetGroupDetails(string group)
+    public Result GetEvent(string group)
     {
-      Result result = CallFunction("getGroupDetails", TemporalParameters(new Dictionary<string, string>() {
+      Result result = CallFunction("getEvent", TemporalParameters(new Dictionary<string, string>() {
         { "group", group }
       }));
       List<Status> statuses = result.statuses;
