@@ -23,9 +23,27 @@ namespace DailyEvents
       this.http = new HttpClient(AppInfo.ApiEntryPoint, customHeaders);
     }
 
-    public Result CreateGroup()
+    public Result CreateGroup(string name)
     {
-      Result result = CallFunction("createGroup");
+      Result result = CallFunction("createGroup", new Dictionary<string, string>() {
+        { "name", name }
+      });
+      return result;
+    }
+
+    public Result GetGroupById(string id)
+    {
+      Result result = CallFunction("getGroupById", new Dictionary<string, string>() {
+        { "group", id }
+      });
+      return result;
+    }
+    
+    public Result GetGroupByCode(string code)
+    {
+      Result result = CallFunction("getGroupByCode", new Dictionary<string, string>() {
+        { "group", code }
+      });
       return result;
     }
 
@@ -42,14 +60,6 @@ namespace DailyEvents
       Result result = CallFunction("addComment", TemporalParameters(new Dictionary<string, string>() {
         { "group", group }, { "participant", participant }, { "comment", comment }
       }));
-      return result;
-    }
-
-    public Result GetGroup(string id)
-    {
-      Result result = CallFunction("getGroup", new Dictionary<string, string>() {
-        { "group", id }
-      });
       return result;
     }
 

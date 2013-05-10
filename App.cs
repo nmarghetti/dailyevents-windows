@@ -186,10 +186,8 @@ namespace DailyEvents
           if (IsCurrentGroupSet())
           {
             SetLoadingIcon();
-            Result details = api.GetEvent(Settings.CurrentGroup);
-            SetAppIcon();
-
-            RebuildTrayMenu(details.statuses, details.comments);
+            Result result = api.GetEvent(Settings.CurrentGroup);
+            RebuildTrayMenu(result.statuses, result.comments);
           }
           else
           {
@@ -213,8 +211,6 @@ namespace DailyEvents
       {
         SetLoadingIcon();
         api.SetStatus(Settings.CurrentGroup, LoggedUser, "yes");
-        SetAppIcon();
-
         ShowInfo("Attendance confirmed!");
       }
       catch (Exception ex)
@@ -233,8 +229,6 @@ namespace DailyEvents
       {
         SetLoadingIcon();
         api.SetStatus(Settings.CurrentGroup, LoggedUser, "no");
-        SetAppIcon();
-
         ShowInfo("Attendance cancelled.");
       }
       catch (Exception ex)
@@ -257,8 +251,6 @@ namespace DailyEvents
         {
           SetLoadingIcon();
           api.AddComment(Settings.CurrentGroup, LoggedUser, comment);
-          SetAppIcon();
-
           ShowInfo("Comment added.");
         }
         catch (Exception ex)
@@ -277,40 +269,31 @@ namespace DailyEvents
       if (!CanJoinOrCreateGroups())
         return;
       
-      string name = Prompt.Show("Create Group", "Enter the group's name:", GroupNameMaxLength);
+      string name = Prompt.Show("Create Group", "The name you want to use for this group:", GroupNameMaxLength);
       
       if (name.Length == 0)
         return;
       
-      if (Settings.Groups.ContainsValue(name))
+      try
       {
-        MessageBox.Show("A group named '" + name + "' already exists, please enter another name.", "Existing Group");
-        OnCreateGroup(sender, e);
-      }
-      else
-      {
-        try
-        {
-          SetLoadingIcon();
-          string id = api.CreateGroup().id;
-          SetAppIcon();
+        SetLoadingIcon();
+        string id = api.CreateGroup(name).id;
 
-          dynamic groups = Settings.Groups;
-          groups[id] = name;
-          
-          Settings.Groups = groups;
-          Settings.CurrentGroup = id;
-          
-          ShowInfo("Group created!");
-        }
-        catch (Exception ex)
-        {
-          ShowNetworkError(ex);
-        }
-        finally
-        {
-          SetAppIcon();
-        }
+        dynamic groups = Settings.Groups;
+        groups[id] = name;
+        
+        Settings.Groups = groups;
+        Settings.CurrentGroup = id;
+        
+        ShowInfo("Group created!");
+      }
+      catch (Exception ex)
+      {
+        ShowNetworkError(ex);
+      }
+      finally
+      {
+        SetAppIcon();
       }
     }
     
@@ -319,43 +302,36 @@ namespace DailyEvents
       if (!CanJoinOrCreateGroups())
         return;
       
-      string code = Prompt.Show("Join Group", "Group code:", GroupCodeMaxLength);
+      string code = Prompt.Show("Join Group", "The code you've received from a group member:", GroupCodeMaxLength);
       
       if (code.Length == 0)
         return;
       
-      string name = Prompt.Show("Join Group", "Group name:", GroupNameMaxLength);
+      string name = Prompt.Show("Join Group", "The name you want to use for this group:", GroupNameMaxLength);
 
       if (name.Length == 0)
         return;
 
-      if (Settings.Groups.ContainsValue(name))
+      try
       {
-        MessageBox.Show("A group named '" + name + "' already exists, please enter another name.", "Existing Group");
-        OnJoinGroup(sender, e);
-      }
-      else
-      {
-        try
-        {
-          SetLoadingIcon();
+        SetLoadingIcon();
+        string groupId = api.GetGroupByCode(code).id;
 
-          dynamic groups = Settings.Groups;
-          groups [code] = name;
-          
-          Settings.Groups = groups;
-          Settings.CurrentGroup = code;
-          
-          ShowInfo("Joined group!");
-        }
-        catch (Exception ex)
-        {
-          ShowNetworkError(ex);
-        }
-        finally
-        {
-          SetAppIcon();
-        }
+        dynamic groups  = Settings.Groups;
+        groups[groupId] = name;
+        
+        Settings.Groups = groups;
+        Settings.CurrentGroup = groupId;
+        
+        ShowInfo("Group joined!");
+      }
+      catch (Exception ex)
+      {
+        ShowNetworkError(ex);
+      }
+      finally
+      {
+        SetAppIcon();
       }
     }
 
@@ -363,7 +339,6 @@ namespace DailyEvents
     {
       string name = GetParentMenuText(sender);
       Settings.CurrentGroup = GetGroupId(name);
-
       ShowInfo("Switched group.");
     }
 
@@ -375,11 +350,9 @@ namespace DailyEvents
       try
       {
         SetLoadingIcon();
-        string code = api.GetGroup(groupId).code;
-        SetAppIcon();
+        string code = api.GetGroupById(groupId).code;
 
         Clipboard.SetText(code);
-        
         MessageBox.Show("Send this code to guests: " + code + ".\nThe code was just copied to your clipboard.", "Invite People");
       }
       catch (Exception ex)
@@ -397,7 +370,7 @@ namespace DailyEvents
       string currentName = GetParentMenuText(sender);
       string groupId     = GetGroupId(currentName);
       
-      string newName = Prompt.Show("Rename Group", "Enter the group's new name:", GroupNameMaxLength);
+      string newName = Prompt.Show("Rename Group", "The new name you want to use for this group:", GroupNameMaxLength);
       
       dynamic groups  = Settings.Groups;
       groups[groupId] = newName;

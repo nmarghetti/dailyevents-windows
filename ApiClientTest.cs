@@ -17,16 +17,22 @@ namespace DailyEvents
     [Test()]
     public void should_create_group()
     {
-      string group = api.CreateGroup().id; 
+      Result group = api.CreateGroup("Xamarin Test");
+      string groupId = group.id;
 
-      Assert.NotNull(group);
-      Assert.NotNull(api.GetGroup(group).code);
+      Assert.NotNull(groupId);
+
+      string groupCode = api.GetGroupById(group.id).code;
+      Assert.NotNull(groupCode);
+      
+      groupId = api.GetGroupByCode(groupCode).id;
+      Assert.NotNull(groupId);
     }
 
     [Test()]
     public void should_confirm_and_cancel_attendance()
     {
-      string group = api.CreateGroup().id;
+      string group = api.CreateGroup("Xamarin Test").id;
 
       api.SetStatus(group, "tfernandez", "yes");
       api.SetStatus(group, "ewatanabe", "yes");
@@ -39,13 +45,14 @@ namespace DailyEvents
     [Test()]
     public void should_add_comments()
     {
-      string group = api.CreateGroup().id;
+      string group = api.CreateGroup("Xamarin Test").id;
 
       api.AddComment(group, "ewatanabe", "first comment");
       api.AddComment(group, "tfernandez", "second comment");
+      api.AddComment(group, "gliguori", "third comment");
 
       List<Comment> comments = api.GetEvent(group).comments;
-      Assert.AreEqual(2, comments.Count);
+      Assert.AreEqual(3, comments.Count);
     }
   }
 }
