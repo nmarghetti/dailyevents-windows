@@ -51,6 +51,7 @@ namespace DailyEvents
             break;
           
           case (char) 27: // ESC
+            inputBox.Text = "";
             dialog.Dispose();
             break;
           

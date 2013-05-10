@@ -44,7 +44,7 @@ namespace DailyEvents
       Controls.Add(new ToolStrip() {
         ContextMenu = trayMenu
       });
-      MouseDown += OnRefreshGroup;
+      MouseMove += OnRefreshGroup;
     }
 
     private void InitTrayIcon()
@@ -52,7 +52,7 @@ namespace DailyEvents
       trayIcon = new NotifyIcon();
       trayIcon.Text = "Daily Events";
       trayIcon.ContextMenu = trayMenu;
-      trayIcon.MouseDown += OnRefreshGroup;
+      trayIcon.MouseMove += OnRefreshGroup;
       trayIcon.Visible = true;
       trayIcon.BalloonTipClicked += OnBalloonTipClicked;
 
@@ -179,29 +179,28 @@ namespace DailyEvents
 
     private void OnRefreshGroup(object sender, MouseEventArgs e)
     {
-      if (e.Button == MouseButtons.Right)
+      // if (e.Button == MouseButtons.Right)
+
+      try
       {
-        try
+        if (IsCurrentGroupSet())
         {
-          if (IsCurrentGroupSet())
-          {
-            SetLoadingIcon();
-            Result result = api.GetEvent(Settings.CurrentGroup);
-            RebuildTrayMenu(result.statuses, result.comments);
-          }
-          else
-          {
-            RebuildTrayMenu();
-          }
+          SetLoadingIcon();
+          Result result = api.GetEvent(Settings.CurrentGroup);
+          RebuildTrayMenu(result.statuses, result.comments);
         }
-        catch (Exception ex)
+        else
         {
-          ShowNetworkError(ex);
+          RebuildTrayMenu();
         }
-        finally
-        {
-          SetAppIcon();
-        }
+      }
+      catch (Exception ex)
+      {
+        ShowNetworkError(ex);
+      }
+      finally
+      {
+        SetAppIcon();
       }
     }
 
