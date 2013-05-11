@@ -475,7 +475,8 @@ namespace DailyEvents
 
       if (newVersionBalloonShown && mouseButtonLeft)
       {
-        System.Diagnostics.Process.Start("https://dl.dropboxusercontent.com/u/1210246/DailyEvents/download/DailyEvents-windows.zip");
+        string downloadUrl = AppInfo.BackendUrl() + "download/DailyEvents-windows.zip";
+        System.Diagnostics.Process.Start(downloadUrl);
         newVersionBalloonShown = false;
       }
     }

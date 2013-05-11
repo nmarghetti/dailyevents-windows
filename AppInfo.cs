@@ -4,17 +4,27 @@ namespace DailyEvents
 {
   static public class AppInfo
   {
-    static private readonly string BaseUrl = "https://dl.dropboxusercontent.com/u/1210246/DailyEvents";
-
     static private dynamic info;
 
-    static private dynamic GetInfo()
+    static private dynamic Get()
     {
       if (info == null)
       {
-        info = new HttpClient(BaseUrl).Get("/app.info");
+        info = new HttpClient(BackendUrl()).Get("app.info");
       }
       return info;
+    }
+
+    static public string BackendUrl()
+    {
+      return "http://dailyevents-dev.parseapp.com/";
+    }
+    
+    static public string ApiEntryPoint
+    {
+      get {
+        return "https://api.parse.com/1/functions/";
+      }
     }
 
     static public string CurrentVersion
@@ -35,7 +45,7 @@ namespace DailyEvents
     static public string LatestVersion
     {
       get {
-        return GetInfo()["windows"]["latest_version"];
+        return Get()["windows"]["latest_version"];
       }
     }
 
@@ -44,13 +54,6 @@ namespace DailyEvents
       get {
         string version = LatestVersion;
         return StringVersionToInt(version);
-      }
-    }
-
-    static public string ApiEntryPoint
-    {
-      get {
-        return "https://api.parse.com/1/functions/";
       }
     }
 
