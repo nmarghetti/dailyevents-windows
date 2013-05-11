@@ -460,13 +460,13 @@ namespace DailyEvents
     private void SetAppIcon()
     {
       if (trayIcon != null)
-        trayIcon.Icon = new Icon(SystemIcons.Application, 40, 40);
+        trayIcon.Icon = new Icon(GetEmbeddedResource("app-32x32.png")); // SystemIcons.Application
     }
     
     private void SetLoadingIcon()
     {
       if (trayIcon != null)
-        trayIcon.Icon = new Icon(SystemIcons.Question, 40, 40);
+        trayIcon.Icon = new Icon(GetEmbeddedResource("hourglass-32x32.png")); // SystemIcons.Question
     }
 
     private void OnBalloonTipClicked(object sender, EventArgs e)
@@ -489,6 +489,12 @@ namespace DailyEvents
     private void OnExit(object sender, EventArgs e)
     {
       Application.Exit();
+    }
+
+    private System.IO.Stream GetEmbeddedResource(string name)
+    {
+      System.Reflection.Assembly assembly = System.Reflection.Assembly.GetExecutingAssembly();
+      return assembly.GetManifestResourceStream(name);
     }
   }
 }

@@ -65,5 +65,24 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Properties\" />
+    <Folder Include="Resources\" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\app-16x16.png">
+      <LogicalName>app-16x16.png</LogicalName>
+      <Gettext-ScanForTranslations>False</Gettext-ScanForTranslations>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\app-32x32.png">
+      <LogicalName>app-32x32.png</LogicalName>
+      <Gettext-ScanForTranslations>False</Gettext-ScanForTranslations>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\hourglass-16x16.png">
+      <LogicalName>hourglass-16x16.png</LogicalName>
+      <Gettext-ScanForTranslations>False</Gettext-ScanForTranslations>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\hourglass-32x32.png">
+      <LogicalName>hourglass-32x32.png</LogicalName>
+      <Gettext-ScanForTranslations>False</Gettext-ScanForTranslations>
+    </EmbeddedResource>
   </ItemGroup>
 </Project>
