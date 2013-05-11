@@ -17,7 +17,6 @@ namespace DailyEvents
         Height          = 150,
         Text            = title
       };
-
       Label textLabel = new Label()
       {
         Left  = 15,
@@ -25,7 +24,6 @@ namespace DailyEvents
         Width = 280,
         Text  = text
       };
-
       Label countLabel = new Label()
       {
         Left      = 300,
@@ -34,7 +32,6 @@ namespace DailyEvents
         Text      = maxLength.ToString(),
         ForeColor = Color.Gray
       };
-      
       TextBox inputBox = new TextBox()
       {
         Left      = 15,
@@ -42,28 +39,6 @@ namespace DailyEvents
         Width     = 310,
         MaxLength = maxLength
       };
-      inputBox.KeyPress += (object sender, KeyPressEventArgs e) =>
-      {
-        switch (e.KeyChar)
-        {
-          case (char) 13: // ENTER
-            dialog.Close();
-            break;
-          
-          case (char) 27: // ESC
-            inputBox.Text = "";
-            dialog.Dispose();
-            break;
-          
-          default:
-            break;
-        }
-      };
-      inputBox.TextChanged += (object sender, EventArgs e) =>
-      {
-        countLabel.Text = (maxLength - ((TextBox) sender).Text.Length).ToString();
-      };
-
       Button okButton = new Button()
       {
         Left  = 155,
@@ -71,11 +46,6 @@ namespace DailyEvents
         Top   = 80,
         Text  = "OK"
       };
-      okButton.Click += (object sender, EventArgs e) =>
-      {
-        dialog.Close();
-      };
-      
       Button cancelButton = new Button()
       {
         Left  = 245,
@@ -83,11 +53,42 @@ namespace DailyEvents
         Top   = 80,
         Text  = "Cancel"
       };
+
+      inputBox.KeyPress += (object sender, KeyPressEventArgs e) =>
+      {
+        switch (e.KeyChar)
+        {
+          case (char) 13: // ENTER
+            okButton.PerformClick();
+            break;
+          
+          case (char) 27: // ESC
+            cancelButton.PerformClick();
+            break;
+          
+          default:
+            break;
+        }
+      };
+      inputBox.KeyUp += (object sender, KeyEventArgs e) => 
+      {
+        if (e.KeyData == (Keys.Control | Keys.V))
+          (sender as TextBox).Paste();
+      };
+      inputBox.TextChanged += (object sender, EventArgs e) =>
+      {
+        countLabel.Text = (maxLength - ((TextBox) sender).Text.Length).ToString();
+      };
+      okButton.Click += (object sender, EventArgs e) =>
+      {
+        dialog.Close();
+      };
       cancelButton.Click += (object sender, EventArgs e) =>
       {
+        inputBox.Text = "";
         dialog.Dispose();
       };
-      
+
       dialog.Controls.Add(textLabel);
       dialog.Controls.Add(countLabel);
       dialog.Controls.Add(inputBox);
