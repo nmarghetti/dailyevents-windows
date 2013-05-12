@@ -131,7 +131,8 @@ namespace DailyEvents
   {
     public string id { get; set; }
     public string code { get; set; }
-    
+    public string name { get; set; }
+
     public List<Status> statuses { get; set; }
     public List<Comment> comments { get; set; }
   }

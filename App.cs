@@ -90,7 +90,7 @@ namespace DailyEvents
         }
         else
         {
-          trayMenu.MenuItems.Add("(nobody's attending yet)");
+          trayMenu.MenuItems.Add("(nobody's attending today yet)");
         }
         trayMenu.MenuItems.Add("-");
         trayMenu.MenuItems.Add("I'm in", OnReplyYes);
@@ -306,22 +306,20 @@ namespace DailyEvents
       if (code.Length == 0)
         return;
       
-      string name = Prompt.Show("Join Group", "The name you want to use for this group:", GroupNameMaxLength);
-
-      if (name.Length == 0)
-        return;
-
       try
       {
         SetLoadingIcon();
-        string groupId = api.GetGroupByCode(code).id;
+
+        Result group     = api.GetGroupByCode(code);
+        string groupId   = group.id;
+        string groupName = group.name;
 
         if (groupId == null) {
           MessageBox.Show("The entered code is invalid, please try again.", "Invalid Code");
         }
         else {
           dynamic groups  = Settings.Groups;
-          groups[groupId] = name;
+          groups[groupId] = groupName;
           
           Settings.Groups = groups;
           Settings.CurrentGroup = groupId;
