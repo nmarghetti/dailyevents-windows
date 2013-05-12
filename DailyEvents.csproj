@@ -76,13 +76,11 @@
       <LogicalName>app-32x32.png</LogicalName>
       <Gettext-ScanForTranslations>False</Gettext-ScanForTranslations>
     </EmbeddedResource>
-    <EmbeddedResource Include="Resources\hourglass-16x16.png">
-      <LogicalName>hourglass-16x16.png</LogicalName>
-      <Gettext-ScanForTranslations>False</Gettext-ScanForTranslations>
+    <EmbeddedResource Include="Resources\app-gray-16x16.png">
+      <LogicalName>app-gray-16x16.png</LogicalName>
     </EmbeddedResource>
-    <EmbeddedResource Include="Resources\hourglass-32x32.png">
-      <LogicalName>hourglass-32x32.png</LogicalName>
-      <Gettext-ScanForTranslations>False</Gettext-ScanForTranslations>
+    <EmbeddedResource Include="Resources\app-gray-32x32.png">
+      <LogicalName>app-gray-32x32.png</LogicalName>
     </EmbeddedResource>
   </ItemGroup>
 </Project>

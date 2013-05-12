@@ -464,7 +464,7 @@ namespace DailyEvents
     private void SetLoadingIcon()
     {
       if (trayIcon != null)
-        trayIcon.Icon = new Icon(GetEmbeddedResource("hourglass-32x32.png")); // SystemIcons.Question
+        trayIcon.Icon = new Icon(GetEmbeddedResource("app-gray-32x32.png")); // SystemIcons.Question
     }
 
     private void OnBalloonTipClicked(object sender, EventArgs e)
