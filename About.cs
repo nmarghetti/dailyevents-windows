@@ -52,7 +52,7 @@ namespace DailyEvents
       };
       websiteButton.Click += (object sender, EventArgs e) =>
       {
-        System.Diagnostics.Process.Start("http://www.dailyeventsapp.com/");
+        System.Diagnostics.Process.Start("http://dailyevents.parseapp.com/");
         dialog.Close();
       };
 
