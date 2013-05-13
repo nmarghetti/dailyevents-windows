@@ -18,7 +18,7 @@ namespace DailyEvents
     public void should_format_current_time()
     {
       string timestamp = DateUtils.CurrentTimeMillis();
-      string time = DateUtils.FormatTime(timestamp);
+      string time = DateUtils.FormatTime(timestamp, "-120");
       Assert.IsNotNullOrEmpty(time);
       Assert.AreEqual(5, time.Length);
     }

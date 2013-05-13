@@ -106,7 +106,8 @@ namespace DailyEvents
             string participant = comment.participant;
             string commentText = comment.comment;
             string timestamp   = comment.timestamp;
-            string localTime   = DateUtils.FormatTime(timestamp);
+            string timezone    = comment.timezone;
+            string localTime   = DateUtils.FormatTime(timestamp, timezone);
 
             trayMenu.MenuItems.Add(localTime + " " + participant + ": " + commentText);
           }

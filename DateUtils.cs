@@ -11,24 +11,27 @@ namespace DailyEvents
       return (DateTime.UtcNow - Jan1st1970).TotalMilliseconds.ToString();
     }
 
-    static public string FormatTime(string timestamp)
+    static public string FormatTime(string timestamp, string timezone)
     {
-      DateTime dateTime = ToDateTime(timestamp);
+      DateTime dateTime = ToDateTime(timestamp, timezone);
       return dateTime.ToString("HH:mm");
     }
 
     static public string GetUtcOffsetInMinutes(string timestamp)
     {
-      DateTime dateTime = ToDateTime(timestamp);
+      DateTime dateTime = ToDateTime(timestamp, "0");
       TimeSpan timeSpan = TimeZone.CurrentTimeZone.GetUtcOffset(dateTime);
       int offset = timeSpan.Negate().Hours * 60;
       return offset.ToString();
     }
 
-    static private DateTime ToDateTime(string timestamp)
+    static private DateTime ToDateTime(string timestamp, string timezone)
     {
+      int offsetInMinutes = 0;
+      Int32.TryParse(timezone, out offsetInMinutes);
+
       double seconds = Math.Round(Convert.ToDouble(timestamp) / 1000);
-      return Jan1st1970.AddSeconds(seconds).ToLocalTime();
+      return Jan1st1970.AddSeconds(seconds - offsetInMinutes * 60);
     }
   }
 }
