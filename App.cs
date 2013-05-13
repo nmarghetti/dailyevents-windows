@@ -458,13 +458,13 @@ namespace DailyEvents
     private void SetAppIcon()
     {
       if (trayIcon != null)
-        trayIcon.Icon = new Icon(GetEmbeddedResource("app-32x32.png")); // SystemIcons.Application
+        trayIcon.Icon = new Icon(GetEmbeddedResource("app.ico"));
     }
     
     private void SetLoadingIcon()
     {
       if (trayIcon != null)
-        trayIcon.Icon = new Icon(GetEmbeddedResource("app-gray-32x32.png")); // SystemIcons.Question
+        trayIcon.Icon = new Icon(GetEmbeddedResource("app-gray.ico"));
     }
 
     private void OnBalloonTipClicked(object sender, EventArgs e)
