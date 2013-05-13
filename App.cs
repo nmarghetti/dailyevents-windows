@@ -52,7 +52,7 @@ namespace DailyEvents
       trayIcon = new NotifyIcon();
       trayIcon.Text = "Daily Events";
       trayIcon.ContextMenu = trayMenu;
-      trayIcon.MouseMove += OnRefreshGroup;
+      trayIcon.MouseDown += OnRefreshGroup;
       trayIcon.Visible = true;
       trayIcon.BalloonTipClicked += OnBalloonTipClicked;
 
