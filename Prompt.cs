@@ -70,11 +70,6 @@ namespace DailyEvents
             break;
         }
       };
-      inputBox.KeyUp += (object sender, KeyEventArgs e) => 
-      {
-        if (e.KeyData == (Keys.Control | Keys.V))
-          (sender as TextBox).Paste();
-      };
       inputBox.TextChanged += (object sender, EventArgs e) =>
       {
         countLabel.Text = (maxLength - ((TextBox) sender).Text.Length).ToString();
