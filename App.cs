@@ -7,11 +7,11 @@ namespace DailyEvents
 {
   public class App : Form
   {
-    static private readonly string LoggedUser = Environment.UserName;
-
     static private readonly bool SkipTrayIcon = false;
 
-    static private readonly short MaxGroups          = 5;
+    static private readonly short MaxGroups = 5;
+
+    static private readonly short UsernameMaxLength  = 20;
     static private readonly short GroupNameMaxLength = 30;
     static private readonly short GroupCodeMaxLength = 15;
     static private readonly short CommentMaxLength   = 70;
@@ -119,6 +119,7 @@ namespace DailyEvents
         trayMenu.MenuItems.Add("(no group is set)");
         trayMenu.MenuItems.Add("-");
       }
+      trayMenu.MenuItems.Add(BuildAccountMenu());
       trayMenu.MenuItems.Add(BuildGroupsMenu());
 
       trayMenu.MenuItems.Add("-");
@@ -126,7 +127,14 @@ namespace DailyEvents
       trayMenu.MenuItems.Add("Exit", OnExit);
     }
 
-    MenuItem BuildGroupsMenu()
+    private MenuItem BuildAccountMenu()
+    {
+      MenuItem menu = new MenuItem("Account");
+      menu.MenuItems.Add("Change username", OnChangeUsername);
+      return menu;
+    }
+
+    private MenuItem BuildGroupsMenu()
     {
       MenuItem menu = new MenuItem("Groups");
 
@@ -210,7 +218,7 @@ namespace DailyEvents
       try
       {
         SetLoadingIcon();
-        api.SetStatus(Settings.CurrentGroup, LoggedUser, "yes");
+        api.SetStatus(Settings.CurrentGroup, Settings.Username, "yes");
         ShowInfo("Attendance confirmed");
       }
       catch (Exception ex)
@@ -228,7 +236,7 @@ namespace DailyEvents
       try
       {
         SetLoadingIcon();
-        api.SetStatus(Settings.CurrentGroup, LoggedUser, "no");
+        api.SetStatus(Settings.CurrentGroup, Settings.Username, "no");
         ShowInfo("Attendance cancelled");
       }
       catch (Exception ex)
@@ -250,7 +258,7 @@ namespace DailyEvents
         try
         {
           SetLoadingIcon();
-          api.AddComment(Settings.CurrentGroup, LoggedUser, comment);
+          api.AddComment(Settings.CurrentGroup, Settings.Username, comment);
           ShowInfo("Comment added");
         }
         catch (Exception ex)
@@ -262,6 +270,18 @@ namespace DailyEvents
           SetAppIcon();
         }
       }
+    }
+
+    private void OnChangeUsername(object sender, EventArgs e)
+    {
+      string newName = Prompt.Show("Change Username", "The name you want to use:", Settings.Username, UsernameMaxLength);
+
+      if (newName.Length == 0)
+        return;
+      
+      Settings.Username = newName;
+
+      ShowInfo("Username changed to \"" + newName + "\"");
     }
 
     private void OnCreateGroup(object sender, EventArgs e)
@@ -373,7 +393,7 @@ namespace DailyEvents
       string currentName = GetParentMenuText(sender);
       string groupId     = GetGroupId(currentName);
       
-      string newName = Prompt.Show("Rename Group", "The name you want to use for this group:", GroupNameMaxLength);
+      string newName = Prompt.Show("Rename Group", "The name you want to use for this group:", currentName, GroupNameMaxLength);
       
       if (newName.Length == 0)
         return;

@@ -5,6 +5,18 @@ namespace DailyEvents
 {
   static public class Settings
   {
+    static public string Username
+    {
+      get {
+        string username = Properties.Settings.Default.Username;
+        return username.Trim().Length > 0 ? username : Environment.UserName;
+      }
+      set {
+        Properties.Settings.Default.Username = value;
+        Properties.Settings.Default.Save();
+      }
+    }
+
     static public dynamic Groups
     {
       get {

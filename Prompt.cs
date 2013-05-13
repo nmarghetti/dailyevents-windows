@@ -8,6 +8,11 @@ namespace DailyEvents
   {
     static public string Show(string title, string text, int maxLength)
     {
+      return Show(title, text, String.Empty, maxLength);
+    }
+
+    static public string Show(string title, string text, string placeholder, int maxLength)
+    {
       Form dialog = new Form()
       {
         StartPosition   = FormStartPosition.CenterScreen,
@@ -29,7 +34,7 @@ namespace DailyEvents
         Left      = 300,
         Top       = 20,
         Width     = 30,
-        Text      = maxLength.ToString(),
+        Text      = (maxLength - placeholder.Length).ToString(),
         ForeColor = Color.Gray
       };
       TextBox inputBox = new TextBox()
@@ -37,6 +42,7 @@ namespace DailyEvents
         Left      = 15,
         Top       = 45,
         Width     = 310,
+        Text      = placeholder,
         MaxLength = maxLength
       };
       Button okButton = new Button()
