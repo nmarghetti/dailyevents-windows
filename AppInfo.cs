@@ -10,7 +10,8 @@ namespace DailyEvents
     {
       if (info == null)
       {
-        info = new HttpClient(BackendUrl()).Get("meta/apps.info");
+        string response = new HttpClient(BackendUrl()).Get("meta/apps.info");
+        info = Json.Deserialize(response);
       }
       return info;
     }
