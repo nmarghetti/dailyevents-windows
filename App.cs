@@ -210,7 +210,7 @@ namespace DailyEvents
       {
         SetLoadingIcon();
         api.SetStatus(Settings.CurrentGroup, LoggedUser, "yes");
-        ShowInfo("Attendance confirmed!");
+        ShowInfo("Attendance confirmed");
       }
       catch (Exception ex)
       {
@@ -228,7 +228,7 @@ namespace DailyEvents
       {
         SetLoadingIcon();
         api.SetStatus(Settings.CurrentGroup, LoggedUser, "no");
-        ShowInfo("Attendance cancelled.");
+        ShowInfo("Attendance cancelled");
       }
       catch (Exception ex)
       {
@@ -250,7 +250,7 @@ namespace DailyEvents
         {
           SetLoadingIcon();
           api.AddComment(Settings.CurrentGroup, LoggedUser, comment);
-          ShowInfo("Comment added.");
+          ShowInfo("Comment added");
         }
         catch (Exception ex)
         {
@@ -268,23 +268,23 @@ namespace DailyEvents
       if (!CanJoinOrCreateGroups())
         return;
       
-      string name = Prompt.Show("Create Group", "The name you want to use for this group:", GroupNameMaxLength);
+      string groupName = Prompt.Show("Create Group", "The name you want to use for this group:", GroupNameMaxLength);
       
-      if (name.Length == 0)
+      if (groupName.Length == 0)
         return;
       
       try
       {
         SetLoadingIcon();
-        string id = api.CreateGroup(name).id;
+        string id = api.CreateGroup(groupName).id;
 
         dynamic groups = Settings.Groups;
-        groups[id] = name;
+        groups[id] = groupName;
         
         Settings.Groups = groups;
         Settings.CurrentGroup = id;
         
-        ShowInfo("Group created!");
+        ShowInfo("Created \"" + groupName + "\"");
       }
       catch (Exception ex)
       {
@@ -324,7 +324,7 @@ namespace DailyEvents
           Settings.Groups = groups;
           Settings.CurrentGroup = groupId;
           
-          ShowInfo("Joined group!");
+          ShowInfo("Joined \"" + groupName + "\"");
         }
       }
       catch (Exception ex)
@@ -341,7 +341,7 @@ namespace DailyEvents
     {
       string name = GetParentMenuText(sender);
       Settings.CurrentGroup = GetGroupId(name);
-      ShowInfo("Switched group.");
+      ShowInfo("Switched to \"" + name + "\"");
     }
 
     private void OnInvitePeople(object sender, EventArgs e)
@@ -372,17 +372,17 @@ namespace DailyEvents
       string currentName = GetParentMenuText(sender);
       string groupId     = GetGroupId(currentName);
       
-      string name = Prompt.Show("Rename Group", "The name you want to use for this group:", GroupNameMaxLength);
+      string newName = Prompt.Show("Rename Group", "The name you want to use for this group:", GroupNameMaxLength);
       
-      if (name.Length == 0)
+      if (newName.Length == 0)
         return;
 
       dynamic groups  = Settings.Groups;
-      groups[groupId] = name;
+      groups[groupId] = newName;
       
       Settings.Groups = groups;
 
-      ShowInfo("Group renamed.");
+      ShowInfo("Group renamed to \"" + newName + "\"");
     }
 
     private void OnLeaveGroup(object sender, EventArgs e)
@@ -395,10 +395,17 @@ namespace DailyEvents
       
       Settings.Groups = groups;
 
-      if (Settings.CurrentGroup == groupId)
+      if (groups.Count == 1) {
+        foreach (var key in groups.Keys)
+        {
+          Settings.CurrentGroup = key;
+          break;
+        }
+      }
+      else if (Settings.CurrentGroup == groupId) {
         Settings.CurrentGroup = "";
-
-      ShowInfo("Group removed.");
+      }
+      ShowInfo("Left \"" + groupName + "\"");
     }
 
     private string GetParentMenuText(object sender)
