@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace DailyEvents
 {
@@ -8,7 +9,7 @@ namespace DailyEvents
     {
       get {
         string json = Properties.Settings.Default.Groups;
-        return Json.Deserialize(json);
+        return Json.Deserialize<SortedDictionary<string, string>>(json);
       }
       set {
         string json = Json.Serialize(value);
