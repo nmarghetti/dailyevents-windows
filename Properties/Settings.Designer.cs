@@ -11,17 +11,43 @@
         return defaultInstance;
       }
     }
+    
+    [global::System.Configuration.UserScopedSettingAttribute()]
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+    [global::System.Configuration.DefaultSettingValueAttribute("")]
+    public string ClientId
+    {
+      get {
+        return ((string)(this["ClientId"]));
+      }
+      set {
+        this["ClientId"] = value;
+      }
+    }
 
     [global::System.Configuration.UserScopedSettingAttribute()]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Configuration.DefaultSettingValueAttribute("")]
-    public string Username
+    public string DisplayName
     {
       get {
-        return ((string)(this["Username"]));
+        return ((string)(this["DisplayName"]));
       }
       set {
-        this["Username"] = value;
+        this["DisplayName"] = value;
+      }
+    }
+
+    [global::System.Configuration.UserScopedSettingAttribute()]
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+    [global::System.Configuration.DefaultSettingValueAttribute("")]
+    public string CurrentGroup
+    {
+      get {
+        return ((string)(this["CurrentGroup"]));
+      }
+      set {
+        this["CurrentGroup"] = value;
       }
     }
 
@@ -35,19 +61,6 @@
       }
       set {
         this["Groups"] = value;
-      }
-    }
-    
-    [global::System.Configuration.UserScopedSettingAttribute()]
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-    [global::System.Configuration.DefaultSettingValueAttribute("")]
-    public string CurrentGroup
-    {
-      get {
-        return ((string)(this["CurrentGroup"]));
-      }
-      set {
-        this["CurrentGroup"] = value;
       }
     }
   }

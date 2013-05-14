@@ -75,9 +75,11 @@ namespace DailyEvents
       Invalidate();
       trayMenu.MenuItems.Clear();
 
+      trayMenu.MenuItems.Add("Group: " + Settings.CurrentGroupName);
+
       if (IsCurrentGroupSet())
       {
-        trayMenu.MenuItems.Add(GetCurrentGroupName());
+        trayMenu.MenuItems.Add("Attending today: " + GetSizeOf(statuses));
         trayMenu.MenuItems.Add("-");
 
         if (statuses != null && statuses.Count > 0)
@@ -87,12 +89,8 @@ namespace DailyEvents
             string participant = status.participant;
             trayMenu.MenuItems.Add(participant);
           }
+          trayMenu.MenuItems.Add("-");
         }
-        else
-        {
-          trayMenu.MenuItems.Add("(nobody's attending today yet)");
-        }
-        trayMenu.MenuItems.Add("-");
         trayMenu.MenuItems.Add("I'm in", OnReplyYes);
         trayMenu.MenuItems.Add("I'm out", OnReplyNo);
         trayMenu.MenuItems.Add("-");
@@ -116,21 +114,21 @@ namespace DailyEvents
       }
       else
       {
-        trayMenu.MenuItems.Add("(no group is set)");
         trayMenu.MenuItems.Add("-");
       }
-      trayMenu.MenuItems.Add(BuildAccountMenu());
+
       trayMenu.MenuItems.Add(BuildGroupsMenu());
+      trayMenu.MenuItems.Add(BuildSettingsMenu());
 
       trayMenu.MenuItems.Add("-");
       trayMenu.MenuItems.Add("About", OnAbout);
       trayMenu.MenuItems.Add("Exit", OnExit);
     }
 
-    private MenuItem BuildAccountMenu()
+    private MenuItem BuildSettingsMenu()
     {
-      MenuItem menu = new MenuItem("Account");
-      menu.MenuItems.Add("Change username", OnChangeUsername);
+      MenuItem menu = new MenuItem("Settings");
+      menu.MenuItems.Add("Change display name", OnChangeDisplayName);
       return menu;
     }
 
@@ -218,7 +216,7 @@ namespace DailyEvents
       try
       {
         SetLoadingIcon();
-        api.SetStatus(Settings.CurrentGroup, Settings.Username, "yes");
+        api.SetStatus(Settings.ClientId, Settings.CurrentGroup, Settings.DisplayName, "yes");
         ShowInfo("Attendance confirmed");
       }
       catch (Exception ex)
@@ -236,7 +234,7 @@ namespace DailyEvents
       try
       {
         SetLoadingIcon();
-        api.SetStatus(Settings.CurrentGroup, Settings.Username, "no");
+        api.SetStatus(Settings.ClientId, Settings.CurrentGroup, Settings.DisplayName, "no");
         ShowInfo("Attendance cancelled");
       }
       catch (Exception ex)
@@ -258,7 +256,7 @@ namespace DailyEvents
         try
         {
           SetLoadingIcon();
-          api.AddComment(Settings.CurrentGroup, Settings.Username, comment);
+          api.AddComment(Settings.ClientId, Settings.CurrentGroup, Settings.DisplayName, comment);
           ShowInfo("Comment added");
         }
         catch (Exception ex)
@@ -272,16 +270,16 @@ namespace DailyEvents
       }
     }
 
-    private void OnChangeUsername(object sender, EventArgs e)
+    private void OnChangeDisplayName(object sender, EventArgs e)
     {
-      string newName = Prompt.Show("Change Username", "Enter the name you want to use:", Settings.Username, UsernameMaxLength);
+      string name = Prompt.Show("Change Display Name", "Enter the name you want to use:", Settings.DisplayName, UsernameMaxLength);
 
-      if (newName.Length == 0)
+      if (name.Length == 0)
         return;
       
-      Settings.Username = newName;
+      Settings.DisplayName = name;
 
-      ShowInfo("Username changed to \"" + newName + "\"");
+      ShowInfo("Display name changed to \"" + name + "\"");
     }
 
     private void OnCreateGroup(object sender, EventArgs e)
@@ -393,7 +391,7 @@ namespace DailyEvents
       string currentName = GetParentMenuText(sender);
       string groupId     = GetGroupId(currentName);
       
-      string newName = Prompt.Show("Rename Group", "Enter the new name you want to use for this group:", currentName, GroupNameMaxLength);
+      string newName = Prompt.Show("Rename Group", "Enter the name you want to use for this group:", currentName, GroupNameMaxLength);
       
       if (newName.Length == 0)
         return;
@@ -451,12 +449,6 @@ namespace DailyEvents
       return currentGroup.Length > 0 && Settings.Groups.ContainsKey(currentGroup);
     }
 
-    private string GetCurrentGroupName()
-    {
-      string groupId = Settings.CurrentGroup;
-      return Settings.Groups[groupId];
-    }
-
     private string GetGroupId(string name)
     {
       foreach (var group in Settings.Groups)
@@ -466,7 +458,7 @@ namespace DailyEvents
           return group.Key;
         }
       }
-      throw new ApplicationException("Group not found: " + name);
+      throw new InvalidOperationException("Group not found: " + name);
     }
 
     private void ShowInfo(string message)
@@ -521,6 +513,11 @@ namespace DailyEvents
     {
       System.Reflection.Assembly assembly = System.Reflection.Assembly.GetExecutingAssembly();
       return assembly.GetManifestResourceStream(name);
+    }
+
+    private int GetSizeOf(dynamic list)
+    {
+      return list != null ? list.Count : 0;
     }
   }
 }

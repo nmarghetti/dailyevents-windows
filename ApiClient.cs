@@ -47,26 +47,26 @@ namespace DailyEvents
       return result;
     }
 
-    public Result SetStatus(string group, string participant, string reply)
+    public Result SetStatus(string clientId, string groupId, string participant, string reply)
     {
-      Result result = CallFunction("setStatus", TemporalParameters(new Dictionary<string, string>() {
-        { "group", group }, { "participant", participant }, { "reply", reply }
+      Result result = CallFunction("setStatus", TimeParameters(new Dictionary<string, string>() {
+        { "clientId", clientId }, { "groupId", groupId }, { "participant", participant }, { "reply", reply }
       }));
       return result;
     }
     
-    public Result AddComment(string group, string participant, string comment)
+    public Result AddComment(string clientId, string groupId, string participant, string comment)
     {
-      Result result = CallFunction("addComment", TemporalParameters(new Dictionary<string, string>() {
-        { "group", group }, { "participant", participant }, { "comment", comment }
+      Result result = CallFunction("addComment", TimeParameters(new Dictionary<string, string>() {
+        { "clientId", clientId }, { "groupId", groupId }, { "participant", participant }, { "comment", comment }
       }));
       return result;
     }
 
-    public Result GetEvent(string group)
+    public Result GetEvent(string groupId)
     {
-      Result result = CallFunction("getEvent", TemporalParameters(new Dictionary<string, string>() {
-        { "group", group }
+      Result result = CallFunction("getEvent", TimeParameters(new Dictionary<string, string>() {
+        { "groupId", groupId }
       }));
       List<Status> statuses = result.statuses;
       foreach (Status status in statuses.FindAll(s => s.reply == "no"))
@@ -87,7 +87,7 @@ namespace DailyEvents
       return Deserialize(response);
     }
 
-    private dynamic TemporalParameters(Dictionary<string, string> requestParams)
+    private dynamic TimeParameters(Dictionary<string, string> requestParams)
     {
       string timestamp = DateUtils.CurrentTimeMillis();
       string timezone  = DateUtils.GetUtcOffsetInMinutes(timestamp);
@@ -96,9 +96,9 @@ namespace DailyEvents
         { "timestamp", timestamp },
         { "timezone", timezone }
       };
-      foreach (var requestParam in requestParams)
+      foreach (var param in requestParams)
       {
-        parameters.Add(requestParam.Key, requestParam.Value);
+        parameters.Add(param.Key, param.Value);
       }
       return parameters;
     }

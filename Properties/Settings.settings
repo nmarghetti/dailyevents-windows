@@ -2,14 +2,17 @@
 <SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="DailyEvents.Properties" GeneratedClassName="Settings">
   <Profiles />
   <Settings>
-    <Setting Name="Username" Type="System.String" Scope="User">
+    <Setting Name="ClientId" Type="System.String" Scope="User">
+      <Value Profile="(Default)"></Value>
+    </Setting>
+    <Setting Name="DisplayName" Type="System.String" Scope="User">
+      <Value Profile="(Default)"></Value>
+    </Setting>
+    <Setting Name="CurrentGroup" Type="System.String" Scope="User">
       <Value Profile="(Default)"></Value>
     </Setting>
     <Setting Name="Groups" Type="System.String" Scope="User">
       <Value Profile="(Default)">{}</Value>
-    </Setting>
-    <Setting Name="CurrentGroup" Type="System.String" Scope="User">
-      <Value Profile="(Default)"></Value>
     </Setting>
   </Settings>
 </SettingsFile>

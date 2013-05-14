@@ -5,15 +5,65 @@ namespace DailyEvents
 {
   static public class Settings
   {
-    static public string Username
+    static public string ClientId
     {
       get {
-        string username = Properties.Settings.Default.Username;
-        return username.Trim().Length > 0 ? username : Environment.UserName;
+        string id = Properties.Settings.Default.ClientId;
+        if (id.Length == 0)
+        {
+          id = RemoveSpaces(Environment.OSVersion) + "+" +
+               RemoveSpaces(Environment.Version) + "::" +
+               System.Guid.NewGuid().ToString();
+
+          Properties.Settings.Default.ClientId = id;
+          Properties.Settings.Default.Save();
+        }
+        return id;
+      }
+    }
+
+    static public string DisplayName
+    {
+      get {
+        string name = Properties.Settings.Default.DisplayName;
+        if (name.Length == 0)
+        {
+          name = Environment.UserName;
+          Properties.Settings.Default.DisplayName = name;
+          Properties.Settings.Default.Save();
+        }
+        return name;
       }
       set {
-        Properties.Settings.Default.Username = value;
+        Properties.Settings.Default.DisplayName = value;
         Properties.Settings.Default.Save();
+      }
+    }
+    
+    static public string CurrentGroup
+    {
+      get {
+        return Properties.Settings.Default.CurrentGroup;
+      }
+      set {
+        Properties.Settings.Default.CurrentGroup = value;
+        Properties.Settings.Default.Save();
+      }
+    }
+    
+    static public string CurrentGroupName
+    {
+      get {
+        string id   = CurrentGroup;
+        string name = "(not set)";
+
+        dynamic groups = Groups;
+
+        if (groups.ContainsKey(id))
+        {
+          name = groups[id];
+        }
+        return name;
       }
     }
 
@@ -43,15 +93,9 @@ namespace DailyEvents
       }
     }
 
-    static public string CurrentGroup
+    static private string RemoveSpaces(dynamic value)
     {
-      get {
-        return Properties.Settings.Default.CurrentGroup;
-      }
-      set {
-        Properties.Settings.Default.CurrentGroup = value;
-        Properties.Settings.Default.Save();
-      }
+      return value.ToString().Replace(" ", String.Empty);
     }
   }
 }
