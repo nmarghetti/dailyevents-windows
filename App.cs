@@ -163,8 +163,8 @@ namespace DailyEvents
       {
         menu.MenuItems.Add("-");
       }
-      menu.MenuItems.Add("Join group", OnJoinGroup);
       menu.MenuItems.Add("Create group", OnCreateGroup);
+      menu.MenuItems.Add("Join group", OnJoinGroup);
 
       return menu;
     }
