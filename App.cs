@@ -274,7 +274,7 @@ namespace DailyEvents
 
     private void OnChangeUsername(object sender, EventArgs e)
     {
-      string newName = Prompt.Show("Change Username", "The name you want to use:", Settings.Username, UsernameMaxLength);
+      string newName = Prompt.Show("Change Username", "Enter the name you want to use:", Settings.Username, UsernameMaxLength);
 
       if (newName.Length == 0)
         return;
@@ -289,7 +289,7 @@ namespace DailyEvents
       if (!CanJoinOrCreateGroups())
         return;
       
-      string groupName = Prompt.Show("Create Group", "The name you want to use for this group:", GroupNameMaxLength);
+      string groupName = Prompt.Show("Create Group", "Enter the group's name:", GroupNameMaxLength);
       
       if (groupName.Length == 0)
         return;
@@ -322,7 +322,7 @@ namespace DailyEvents
       if (!CanJoinOrCreateGroups())
         return;
       
-      string code = Prompt.Show("Join Group", "The code you've received from a group member:", GroupCodeMaxLength);
+      string code = Prompt.Show("Join Group", "Enter the code you've received from a group member:", GroupCodeMaxLength);
       
       if (code.Length == 0)
         return;
@@ -393,7 +393,7 @@ namespace DailyEvents
       string currentName = GetParentMenuText(sender);
       string groupId     = GetGroupId(currentName);
       
-      string newName = Prompt.Show("Rename Group", "The name you want to use for this group:", currentName, GroupNameMaxLength);
+      string newName = Prompt.Show("Rename Group", "Enter the new name you want to use for this group:", currentName, GroupNameMaxLength);
       
       if (newName.Length == 0)
         return;
