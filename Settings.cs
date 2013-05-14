@@ -21,7 +21,7 @@ namespace DailyEvents
     {
       get {
         string json = Properties.Settings.Default.Groups;
-        return Json.Deserialize<SortedDictionary<string, string>>(json);
+        return Json.Deserialize(json);
       }
       set {
         string json = Json.Serialize(value);
@@ -30,6 +30,19 @@ namespace DailyEvents
       }
     }
     
+    static public dynamic SortedGroups
+    {
+      get {
+        List<string> groups = new List<string>();
+        foreach (var group in Groups.Values)
+        {
+          groups.Add(group);
+        }
+        groups.Sort();
+        return groups;
+      }
+    }
+
     static public string CurrentGroup
     {
       get {

@@ -138,17 +138,17 @@ namespace DailyEvents
     {
       MenuItem menu = new MenuItem("Groups");
 
-      dynamic joinedGroups = Settings.Groups;
+      dynamic groups = Settings.SortedGroups;
       short numberOfGroupsAdded = 0;
 
-      foreach (var group in joinedGroups)
+      foreach (var group in groups)
       {
         if (numberOfGroupsAdded == MaxGroups)
           break;
 
         // menu.MenuItems.Add(group.Value, (EventHandler)OnSwitchGroup); // (EventHandler)((sender, e) => {})
 
-        MenuItem subMenu = new MenuItem(group.Value);
+        MenuItem subMenu = new MenuItem(group);
 
         subMenu.MenuItems.Add("Switch to", OnSwitchToGroup);
         subMenu.MenuItems.Add("Invite people", OnInvitePeople);
@@ -159,7 +159,7 @@ namespace DailyEvents
 
         numberOfGroupsAdded++;
       }
-      if (joinedGroups.Count > 0)
+      if (groups.Count > 0)
       {
         menu.MenuItems.Add("-");
       }
