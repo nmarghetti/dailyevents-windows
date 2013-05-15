@@ -272,7 +272,7 @@ namespace DailyEvents
 
     private void OnChangeDisplayName(object sender, EventArgs e)
     {
-      string name = Prompt.Show("Change Display Name", "Enter the name you want to use:", Settings.DisplayName, UsernameMaxLength);
+      string name = Prompt.Show("Change Display Name", "Enter the name you want to use from now on:", Settings.DisplayName, UsernameMaxLength);
 
       if (name.Length == 0)
         return;
