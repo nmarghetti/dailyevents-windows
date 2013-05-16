@@ -90,8 +90,10 @@ namespace DailyEvents
           }
           trayMenu.MenuItems.Add("-");
         }
-        trayMenu.MenuItems.Add("I'm in", OnReplyYes);
-        trayMenu.MenuItems.Add("I'm out", OnReplyNo);
+        // http://en.wikipedia.org/wiki/Western_Latin_character_sets_(computing)
+
+        trayMenu.MenuItems.Add("\u221A  I'm in", OnReplyYes);
+        trayMenu.MenuItems.Add("\u00D7  I'm out", OnReplyNo);
         trayMenu.MenuItems.Add("-");
         trayMenu.MenuItems.Add("Add comment", OnNewComment);
         trayMenu.MenuItems.Add("-");
