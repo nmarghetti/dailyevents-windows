@@ -75,10 +75,9 @@ namespace DailyEvents
       Invalidate();
       trayMenu.MenuItems.Clear();
 
-      trayMenu.MenuItems.Add("Group: " + Settings.CurrentGroupName);
-
       if (IsCurrentGroupSet())
       {
+        trayMenu.MenuItems.Add(BuildCurrentGroupMenu());
         trayMenu.MenuItems.Add("Attending today: " + GetSizeOf(statuses));
         trayMenu.MenuItems.Add("-");
 
@@ -112,10 +111,6 @@ namespace DailyEvents
           trayMenu.MenuItems.Add("-");
         }
       }
-      else
-      {
-        trayMenu.MenuItems.Add("-");
-      }
 
       trayMenu.MenuItems.Add(BuildGroupsMenu());
       trayMenu.MenuItems.Add(BuildSettingsMenu());
@@ -132,6 +127,15 @@ namespace DailyEvents
       return menu;
     }
 
+    private MenuItem BuildCurrentGroupMenu()
+    {
+      MenuItem menu = new MenuItem(Settings.CurrentGroupName);
+      menu.MenuItems.Add("Invite people", OnInvitePeople);
+      menu.MenuItems.Add("Rename group", OnRenameGroup);
+      menu.MenuItems.Add("Leave group", OnLeaveGroup);
+      return menu;
+    }
+
     private MenuItem BuildGroupsMenu()
     {
       MenuItem menu = new MenuItem("Groups");
@@ -139,25 +143,20 @@ namespace DailyEvents
       dynamic groups = Settings.SortedGroups;
       short numberOfGroupsAdded = 0;
 
+      string currentGroup = Settings.CurrentGroupName;
+
       foreach (var group in groups)
       {
         if (numberOfGroupsAdded == MaxGroups)
           break;
 
-        // menu.MenuItems.Add(group.Value, (EventHandler)OnSwitchGroup); // (EventHandler)((sender, e) => {})
-
-        MenuItem subMenu = new MenuItem(group);
-
-        subMenu.MenuItems.Add("Switch to", OnSwitchToGroup);
-        subMenu.MenuItems.Add("Invite people", OnInvitePeople);
-        subMenu.MenuItems.Add("Rename group", OnRenameGroup);
-        subMenu.MenuItems.Add("Leave group", OnLeaveGroup);
-        
-        menu.MenuItems.Add(subMenu);
-
+        if (group != currentGroup)
+        {
+          menu.MenuItems.Add(group, (EventHandler)OnSwitchToGroup); // (EventHandler)((sender, e) => {})
+        }
         numberOfGroupsAdded++;
       }
-      if (groups.Count > 0)
+      if (menu.MenuItems.Count > 0)
       {
         menu.MenuItems.Add("-");
       }
@@ -358,23 +357,30 @@ namespace DailyEvents
 
     private void OnSwitchToGroup(object sender, EventArgs e)
     {
-      string name = GetParentMenuText(sender);
-      Settings.CurrentGroup = GetGroupId(name);
-      ShowInfo("Switched to \"" + name + "\"");
+      string groupName = GetCurrentMenuText(sender);
+
+      foreach (var group in Settings.Groups)
+      {
+        if (group.Value == groupName)
+        {
+          Settings.CurrentGroup = group.Key;
+          break;
+        }
+      }
+      ShowInfo("Switched to \"" + groupName + "\"");
     }
 
     private void OnInvitePeople(object sender, EventArgs e)
     {
-      string groupName = GetParentMenuText(sender);
-      string groupId   = GetGroupId(groupName);
-
       try
       {
         SetLoadingIcon();
-        string code = api.GetGroupById(groupId).code;
 
-        Clipboard.SetText(code);
-        MessageBox.Show("Send this code to guests: " + code + ".\nThe code was just copied to your clipboard.", "Invite People");
+        string groupId = Settings.CurrentGroup;
+        string groupCode = api.GetGroupById(groupId).code;
+
+        Clipboard.SetText(groupCode);
+        MessageBox.Show("Send this code to guests: " + groupCode + ".\nThe code was just copied to your clipboard.", "Invite People");
       }
       catch (Exception ex)
       {
@@ -388,10 +394,10 @@ namespace DailyEvents
 
     private void OnRenameGroup(object sender, EventArgs e)
     {
-      string currentName = GetParentMenuText(sender);
-      string groupId     = GetGroupId(currentName);
+      string groupName = GetParentMenuText(sender);
+      string groupId   = Settings.CurrentGroup;
       
-      string newName = Prompt.Show("Rename Group", "Enter the name you want to use for this group:", currentName, GroupNameMaxLength);
+      string newName = Prompt.Show("Rename Group", "Enter the name you want to use for this group:", groupName, GroupNameMaxLength);
       
       if (newName.Length == 0)
         return;
@@ -407,24 +413,24 @@ namespace DailyEvents
     private void OnLeaveGroup(object sender, EventArgs e)
     {
       string groupName = GetParentMenuText(sender);
-      string groupId   = GetGroupId(groupName);
+      string groupId   = Settings.CurrentGroup;
 
       dynamic groups = Settings.Groups;
       groups.Remove(groupId);
       
       Settings.Groups = groups;
 
-      if (groups.Count == 1) {
-        foreach (var key in groups.Keys)
-        {
-          Settings.CurrentGroup = key;
-          break;
-        }
-      }
-      else if (Settings.CurrentGroup == groupId) {
-        Settings.CurrentGroup = "";
+      foreach (var key in groups.Keys)
+      {
+        Settings.CurrentGroup = key;
+        break;
       }
       ShowInfo("Left \"" + groupName + "\"");
+    }
+    
+    private string GetCurrentMenuText(object sender)
+    {
+      return ((MenuItem)sender).Text;
     }
 
     private string GetParentMenuText(object sender)
@@ -447,18 +453,6 @@ namespace DailyEvents
     {
       string currentGroup = Settings.CurrentGroup;
       return currentGroup.Length > 0 && Settings.Groups.ContainsKey(currentGroup);
-    }
-
-    private string GetGroupId(string name)
-    {
-      foreach (var group in Settings.Groups)
-      {
-        if (group.Value == name)
-        {
-          return group.Key;
-        }
-      }
-      throw new InvalidOperationException("Group not found: " + name);
     }
 
     private void ShowInfo(string message)

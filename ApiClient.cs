@@ -34,7 +34,7 @@ namespace DailyEvents
     public Result GetGroupById(string id)
     {
       Result result = CallFunction("getGroupById", new Dictionary<string, string>() {
-        { "group", id }
+        { "id", id }
       });
       return result;
     }
@@ -42,7 +42,7 @@ namespace DailyEvents
     public Result GetGroupByCode(string code)
     {
       Result result = CallFunction("getGroupByCode", new Dictionary<string, string>() {
-        { "group", code }
+        { "code", code }
       });
       return result;
     }

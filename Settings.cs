@@ -54,16 +54,13 @@ namespace DailyEvents
     static public string CurrentGroupName
     {
       get {
-        string id   = CurrentGroup;
-        string name = "(not set)";
-
+        string groupId = CurrentGroup;
         dynamic groups = Groups;
 
-        if (groups.ContainsKey(id))
-        {
-          name = groups[id];
-        }
-        return name;
+        if (groups.ContainsKey(groupId))
+          return groups[groupId];
+        else
+          return null;
       }
     }
 
