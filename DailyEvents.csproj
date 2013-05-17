@@ -49,7 +49,6 @@
     <Compile Include="ApiClient.cs" />
     <Compile Include="HttpClient.cs" />
     <Compile Include="DateUtils.cs" />
-    <Compile Include="App.cs" />
     <Compile Include="Properties\Settings.Designer.cs" />
     <Compile Include="Prompt.cs" />
     <Compile Include="DateUtilsTest.cs" />
@@ -68,11 +67,17 @@
     <Folder Include="Resources\" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Resources\app.ico">
-      <LogicalName>app.ico</LogicalName>
-    </EmbeddedResource>
     <EmbeddedResource Include="Resources\app-gray.ico">
       <LogicalName>app-gray.ico</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="App.cs">
+      <LogicalName>App.cs</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\app-blue.ico">
+      <LogicalName>app-blue.ico</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\app-white.ico">
+      <LogicalName>app-white.ico</LogicalName>
     </EmbeddedResource>
   </ItemGroup>
 </Project>

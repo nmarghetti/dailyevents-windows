@@ -474,7 +474,7 @@ namespace DailyEvents
     private void SetAppIcon()
     {
       if (trayIcon != null)
-        trayIcon.Icon = new Icon(GetEmbeddedResource("app.ico"));
+        trayIcon.Icon = new Icon(GetEmbeddedResource("app-blue.ico"));
     }
     
     private void SetLoadingIcon()
