@@ -7,10 +7,7 @@ namespace DailyEvents
 {
   public class App : Form
   {
-    static private readonly bool SkipTrayIcon = false;
-
-    static private readonly short MaxGroups = 5;
-
+    static private readonly short MaxGroups          = 5;
     static private readonly short UsernameMaxLength  = 20;
     static private readonly short GroupNameMaxLength = 30;
     static private readonly short GroupCodeMaxLength = 15;
@@ -33,7 +30,7 @@ namespace DailyEvents
     {
       RebuildTrayMenu();
 
-      if (SkipTrayIcon)
+      if (AppInfo.DevMode())
         InitToolStrip();
       else
         InitTrayIcon();
@@ -170,7 +167,7 @@ namespace DailyEvents
 
     protected override void OnLoad(EventArgs e)
     {
-      Visible = SkipTrayIcon;
+      Visible = AppInfo.DevMode();
       ShowInTaskbar = false;
       base.OnLoad(e);
     }

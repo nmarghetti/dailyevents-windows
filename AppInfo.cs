@@ -5,6 +5,11 @@ namespace DailyEvents
   static public class AppInfo
   {
     static private dynamic info;
+    
+    static public bool DevMode()
+    {
+      return true;
+    }
 
     static private dynamic Get()
     {
@@ -18,7 +23,9 @@ namespace DailyEvents
 
     static public string BackendUrl()
     {
-      return "http://dailyevents-dev.parseapp.com/";
+      string target = "dailyevents";
+      if (DevMode()) target += "-dev";
+      return "http://" + target + ".parseapp.com/";
     }
     
     static public string ApiEntryPoint
