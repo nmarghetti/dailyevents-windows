@@ -4,28 +4,38 @@ namespace DailyEvents
 {
   static public class AppInfo
   {
-    static private dynamic info;
+    static private dynamic Metadata;
+
+    static AppInfo()
+    {
+      string response = new HttpClient(WebsiteUrl()).Get("meta/apps.info");
+      Metadata = Json.Deserialize(response);
+    }
     
     static public bool DevMode()
     {
       return true;
     }
 
-    static private dynamic Get()
-    {
-      if (info == null)
-      {
-        string response = new HttpClient(BackendUrl()).Get("meta/apps.info");
-        info = Json.Deserialize(response);
-      }
-      return info;
-    }
-
-    static public string BackendUrl()
+    static public string WebsiteUrl()
     {
       string target = "dailyevents";
       if (DevMode()) target += "-dev";
       return "http://" + target + ".parseapp.com/";
+    }
+
+    static public string DonationUrl()
+    {
+      return "https://www.paypal.com/cgi-bin/webscr?" +
+             "cmd=_donations&business=3NLLLDBPUFAT4&" +
+             "lc=FR&item_name=Daily%20Events&" +
+             "item_number=Daily%20Events&currency_code=EUR&" +
+             "bn=PP%2dDonationsBF%3abtn_donate_LG%2egif%3aNonHosted";
+    }
+
+    static public string FeedbackUrl()
+    {
+      return "mailto:tiago.fernandez@gmail.com";
     }
     
     static public string ApiEntryPoint
@@ -53,7 +63,7 @@ namespace DailyEvents
     static public string LatestVersion
     {
       get {
-        return Get()["windows"]["latest_version"];
+        return Metadata["windows"]["latest_version"];
       }
     }
 

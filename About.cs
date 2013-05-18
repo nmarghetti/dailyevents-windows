@@ -39,7 +39,7 @@ namespace DailyEvents
       };
       feedbackButton.Click += (object sender, EventArgs e) =>
       {
-        System.Diagnostics.Process.Start("mailto:tiago.fernandez@gmail.com");
+        System.Diagnostics.Process.Start(AppInfo.FeedbackUrl());
         dialog.Close();
       };
 
@@ -52,7 +52,7 @@ namespace DailyEvents
       };
       websiteButton.Click += (object sender, EventArgs e) =>
       {
-        System.Diagnostics.Process.Start("http://dailyevents.parseapp.com/");
+        System.Diagnostics.Process.Start(AppInfo.WebsiteUrl());
         dialog.Close();
       };
 
@@ -65,11 +65,7 @@ namespace DailyEvents
       };
       donateButton.Click += (object sender, EventArgs e) =>
       {
-        System.Diagnostics.Process.Start("https://www.paypal.com/cgi-bin/webscr?" +
-                                         "cmd=_donations&business=3NLLLDBPUFAT4&" +
-                                         "lc=FR&item_name=Daily%20Events&" +
-                                         "item_number=Daily%20Events&currency_code=EUR&" +
-                                         "bn=PP%2dDonationsBF%3abtn_donate_LG%2egif%3aNonHosted");
+        System.Diagnostics.Process.Start(AppInfo.DonationUrl());
         dialog.Close();
       };
       

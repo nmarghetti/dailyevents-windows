@@ -486,7 +486,7 @@ namespace DailyEvents
 
       if (newVersionBalloonShown && mouseButtonLeft)
       {
-        string downloadUrl = AppInfo.BackendUrl() + "download/DailyEvents-windows.zip";
+        string downloadUrl = AppInfo.WebsiteUrl() + "download/DailyEvents-windows.zip";
         System.Diagnostics.Process.Start(downloadUrl);
         newVersionBalloonShown = false;
       }
