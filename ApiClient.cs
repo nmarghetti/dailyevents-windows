@@ -6,20 +6,21 @@ namespace DailyEvents
 {
   public class ApiClient
   {
-    private readonly Dictionary<string, string> customHeaders = new Dictionary<string, string>() {
-      /* Development */
+    private readonly Dictionary<string, string> developmentHeaders = new Dictionary<string, string>() {
       { "X-Parse-Application-Id", "uI57rIax4Tk31J5dI9EUKR3dCDhaeNphH2D0MmG1" },
       { "X-Parse-REST-API-Key", "kNPRXb7CGw0wkYiK9DtBnGWAtOgdyX6yqQqLMY2X" }
-
-      /* Production
-      { "X-Parse-Application-Id", "Puuy52CoyWk3c5yOIubf3NPecyNdrNw7h4AAU7Qt" },
-      { "X-Parse-REST-API-Key", "eqWvo2PKDxQNnUPvXntTVIg8qYwJFVaPGwVXYtyy" } */
     };
 
+    private readonly Dictionary<string, string> productionHeaders = new Dictionary<string, string>() {
+      { "X-Parse-Application-Id", "Puuy52CoyWk3c5yOIubf3NPecyNdrNw7h4AAU7Qt" },
+      { "X-Parse-REST-API-Key", "eqWvo2PKDxQNnUPvXntTVIg8qYwJFVaPGwVXYtyy" }
+    };
+    
     private readonly HttpClient http;
 
     public ApiClient()
     {
+      Dictionary<string, string> customHeaders = AppInfo.DevMode() ? developmentHeaders : productionHeaders;
       this.http = new HttpClient(AppInfo.ApiEntryPoint, customHeaders);
     }
 
