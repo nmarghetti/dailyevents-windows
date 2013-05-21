@@ -16,22 +16,21 @@ namespace DailyEvents
       { "X-Parse-REST-API-Key", "eqWvo2PKDxQNnUPvXntTVIg8qYwJFVaPGwVXYtyy" }
     };
 
-    private readonly HttpClient http;
-    private readonly string clientId;
+    private HttpClient http;
 
     public ApiClient()
     {
-      this.http     = InitHttpClient();
-      this.clientId = InitClientId();
+      InitHttpClient();
+      GetClientId();
     }
 
-    private HttpClient InitHttpClient()
+    private void InitHttpClient()
     {
       var headers = AppInfo.DevMode() ? developmentHeaders : productionHeaders;
-      return new HttpClient(AppInfo.ApiEntryPoint, headers);
+      this.http = new HttpClient(AppInfo.ApiEntryPoint, headers);
     }
 
-    private string InitClientId()
+    private string GetClientId()
     {
       if (Settings.ClientId.Length == 0)
       {
@@ -69,7 +68,7 @@ namespace DailyEvents
     public Result SetStatus(string groupId, string participant, string reply)
     {
       Result result = CallFunction("setStatus", TimeParameters(new Dictionary<string, string>() {
-        { "clientId", clientId }, { "groupId", groupId }, { "participant", participant }, { "reply", reply }
+        { "clientId", GetClientId() }, { "groupId", groupId }, { "participant", participant }, { "reply", reply }
       }));
       return result;
     }
@@ -77,7 +76,7 @@ namespace DailyEvents
     public Result AddComment(string groupId, string participant, string comment)
     {
       Result result = CallFunction("addComment", TimeParameters(new Dictionary<string, string>() {
-        { "clientId", clientId }, { "groupId", groupId }, { "participant", participant }, { "comment", comment }
+        { "clientId", GetClientId() }, { "groupId", groupId }, { "participant", participant }, { "comment", comment }
       }));
       return result;
     }
