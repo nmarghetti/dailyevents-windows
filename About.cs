@@ -52,7 +52,7 @@ namespace DailyEvents
       };
       websiteButton.Click += (object sender, EventArgs e) =>
       {
-        System.Diagnostics.Process.Start(AppInfo.WebsiteUrl());
+        System.Diagnostics.Process.Start(AppInfo.MarketingUrl());
         dialog.Close();
       };
 

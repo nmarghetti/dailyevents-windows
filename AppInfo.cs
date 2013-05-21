@@ -23,19 +23,20 @@ namespace DailyEvents
       if (DevMode()) target += "-dev";
       return "http://" + target + ".parseapp.com/";
     }
+    
+    static public string MarketingUrl()
+    {
+      return Metadata["marketing_url"];
+    }
 
     static public string DonationUrl()
     {
-      return "https://www.paypal.com/cgi-bin/webscr?" +
-             "cmd=_donations&business=3NLLLDBPUFAT4&" +
-             "lc=FR&item_name=Daily%20Events&" +
-             "item_number=Daily%20Events&currency_code=EUR&" +
-             "bn=PP%2dDonationsBF%3abtn_donate_LG%2egif%3aNonHosted";
+      return Metadata["donation_url"];
     }
 
     static public string FeedbackUrl()
     {
-      return "mailto:tiago.fernandez@gmail.com";
+      return Metadata["feedback_url"];
     }
     
     static public string ApiEntryPoint
