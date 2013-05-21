@@ -15,13 +15,31 @@ namespace DailyEvents
       { "X-Parse-Application-Id", "Puuy52CoyWk3c5yOIubf3NPecyNdrNw7h4AAU7Qt" },
       { "X-Parse-REST-API-Key", "eqWvo2PKDxQNnUPvXntTVIg8qYwJFVaPGwVXYtyy" }
     };
-    
+
     private readonly HttpClient http;
+    private readonly string clientId;
 
     public ApiClient()
     {
-      Dictionary<string, string> customHeaders = AppInfo.DevMode() ? developmentHeaders : productionHeaders;
-      this.http = new HttpClient(AppInfo.ApiEntryPoint, customHeaders);
+      this.http     = InitHttpClient();
+      this.clientId = InitClientId();
+    }
+
+    private HttpClient InitHttpClient()
+    {
+      var headers = AppInfo.DevMode() ? developmentHeaders : productionHeaders;
+      return new HttpClient(AppInfo.ApiEntryPoint, headers);
+    }
+
+    private string InitClientId()
+    {
+      if (Settings.ClientId.Length == 0)
+      {
+        Settings.ClientId = CallFunction("register", new Dictionary<string, string>() {
+          { "environment", Environment.OSVersion + " .NET " + Environment.Version }
+        }).id;
+      }
+      return Settings.ClientId;
     }
 
     public Result CreateGroup(string name)
@@ -48,7 +66,7 @@ namespace DailyEvents
       return result;
     }
 
-    public Result SetStatus(string clientId, string groupId, string participant, string reply)
+    public Result SetStatus(string groupId, string participant, string reply)
     {
       Result result = CallFunction("setStatus", TimeParameters(new Dictionary<string, string>() {
         { "clientId", clientId }, { "groupId", groupId }, { "participant", participant }, { "reply", reply }
@@ -56,7 +74,7 @@ namespace DailyEvents
       return result;
     }
     
-    public Result AddComment(string clientId, string groupId, string participant, string comment)
+    public Result AddComment(string groupId, string participant, string comment)
     {
       Result result = CallFunction("addComment", TimeParameters(new Dictionary<string, string>() {
         { "clientId", clientId }, { "groupId", groupId }, { "participant", participant }, { "comment", comment }

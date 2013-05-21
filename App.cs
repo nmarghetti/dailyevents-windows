@@ -214,7 +214,7 @@ namespace DailyEvents
       try
       {
         SetLoadingIcon();
-        api.SetStatus(Settings.ClientId, Settings.CurrentGroup, Settings.DisplayName, "yes");
+        api.SetStatus(Settings.CurrentGroup, Settings.DisplayName, "yes");
         ShowInfo("Attendance confirmed");
       }
       catch (Exception ex)
@@ -232,7 +232,7 @@ namespace DailyEvents
       try
       {
         SetLoadingIcon();
-        api.SetStatus(Settings.ClientId, Settings.CurrentGroup, Settings.DisplayName, "no");
+        api.SetStatus(Settings.CurrentGroup, Settings.DisplayName, "no");
         ShowInfo("Attendance cancelled");
       }
       catch (Exception ex)
@@ -254,7 +254,7 @@ namespace DailyEvents
         try
         {
           SetLoadingIcon();
-          api.AddComment(Settings.ClientId, Settings.CurrentGroup, Settings.DisplayName, comment);
+          api.AddComment(Settings.CurrentGroup, Settings.DisplayName, comment);
           ShowInfo("Comment added");
         }
         catch (Exception ex)

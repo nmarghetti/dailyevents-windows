@@ -8,17 +8,11 @@ namespace DailyEvents
     static public string ClientId
     {
       get {
-        string id = Properties.Settings.Default.ClientId;
-        if (id.Length == 0)
-        {
-          id = RemoveSpaces(Environment.OSVersion) + "+" +
-               RemoveSpaces(Environment.Version) + "::" +
-               System.Guid.NewGuid().ToString();
-
-          Properties.Settings.Default.ClientId = id;
-          Properties.Settings.Default.Save();
-        }
-        return id;
+        return Properties.Settings.Default.ClientId;
+      }
+      set {
+        Properties.Settings.Default.ClientId = value;
+        Properties.Settings.Default.Save();
       }
     }
 
@@ -88,11 +82,6 @@ namespace DailyEvents
         groups.Sort();
         return groups;
       }
-    }
-
-    static private string RemoveSpaces(dynamic value)
-    {
-      return value.ToString().Replace(" ", String.Empty);
     }
   }
 }

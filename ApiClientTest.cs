@@ -30,16 +30,15 @@ namespace DailyEvents
     }
 
     [Test()]
-    public void should_confirm_and_cancel_attendance()
+    public void should_send_reply()
     {
       string group = api.CreateGroup("Xamarin Test").id;
 
-      api.SetStatus("tfernandez-device", group, "tfernandez", "yes");
-      api.SetStatus("ewatanabe-device", group, "ewatanabe", "yes");
-      api.SetStatus("gliguori-device", group, "gliguori", "no");
+      api.SetStatus(group, "tfernandez", "no");
+      api.SetStatus(group, "tfernandez", "yes");
 
       List<Status> statuses = api.GetEvent(group).statuses;
-      Assert.AreEqual(2, statuses.Count);
+      Assert.AreEqual(1, statuses.Count);
     }
 
     [Test()]
@@ -47,9 +46,9 @@ namespace DailyEvents
     {
       string group = api.CreateGroup("Xamarin Test").id;
 
-      api.AddComment("ewatanabe-device", group, "ewatanabe", "first comment");
-      api.AddComment("tfernandez-device", group, "tfernandez", "second comment");
-      api.AddComment("gliguori-device", group, "gliguori", "third comment");
+      api.AddComment(group, "ewatanabe", "first comment");
+      api.AddComment(group, "tfernandez", "second comment");
+      api.AddComment(group, "gliguori", "third comment");
 
       List<Comment> comments = api.GetEvent(group).comments;
       Assert.AreEqual(3, comments.Count);
