@@ -105,7 +105,8 @@ namespace DailyEvents
             string timezone    = comment.timezone;
             string localTime   = DateUtils.FormatTime(timestamp, timezone);
 
-            trayMenu.MenuItems.Add(localTime + " " + participant + ": " + commentText);
+            string commentLabel = localTime + " " + participant + ": " + commentText;
+            trayMenu.MenuItems.Add(commentLabel, (EventHandler) OnExistingComment);
           }
           trayMenu.MenuItems.Add("-");
         }
@@ -266,6 +267,12 @@ namespace DailyEvents
           SetAppIcon();
         }
       }
+    }
+
+    private void OnExistingComment(object sender, EventArgs e)
+    {
+      string comment = GetCurrentMenuText(sender);
+      Clipboard.SetText(comment);
     }
 
     private void OnChangeDisplayName(object sender, EventArgs e)
