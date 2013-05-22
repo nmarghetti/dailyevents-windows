@@ -14,7 +14,7 @@ namespace DailyEvents
     
     static public bool DevMode()
     {
-      return true;
+      return false;
     }
 
     static public string WebsiteUrl()
@@ -49,7 +49,7 @@ namespace DailyEvents
     static public string CurrentVersion
     {
       get {
-        return "0.9.0"; // Application.ProductVersion
+        return "1.0.0"; // Application.ProductVersion
       }
     }
 
