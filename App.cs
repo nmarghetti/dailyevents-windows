@@ -187,28 +187,29 @@ namespace DailyEvents
 
     private void OnRefreshGroup(object sender, MouseEventArgs e)
     {
-      // if (e.Button == MouseButtons.Right)
-
-      try
+      if (e.Button == MouseButtons.Right)
       {
-        if (IsCurrentGroupSet())
+        try
         {
-          SetLoadingIcon();
-          Result result = api.GetEvent(Settings.CurrentGroup);
-          RebuildTrayMenu(result.statuses, result.comments);
+          if (IsCurrentGroupSet())
+          {
+            SetLoadingIcon();
+            Result result = api.GetEvent(Settings.CurrentGroup);
+            RebuildTrayMenu(result.statuses, result.comments);
+          }
+          else
+          {
+            RebuildTrayMenu();
+          }
         }
-        else
+        catch (Exception ex)
         {
-          RebuildTrayMenu();
+          ShowNetworkError(ex);
         }
-      }
-      catch (Exception ex)
-      {
-        ShowNetworkError(ex);
-      }
-      finally
-      {
-        SetAppIcon();
+        finally
+        {
+          SetAppIcon();
+        }
       }
     }
 
