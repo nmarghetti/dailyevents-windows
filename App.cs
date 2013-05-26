@@ -118,6 +118,8 @@ namespace DailyEvents
       trayMenu.MenuItems.Add("-");
       trayMenu.MenuItems.Add("About", OnAbout);
       trayMenu.MenuItems.Add("Exit", OnExit);
+
+      Validate();
     }
 
     private MenuItem BuildSettingsMenu()
