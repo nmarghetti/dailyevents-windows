@@ -10,6 +10,7 @@
     <RootNamespace>DailyEvents</RootNamespace>
     <AssemblyName>DailyEvents</AssemblyName>
     <ReleaseVersion>1.0.1</ReleaseVersion>
+    <ApplicationIcon>Resources\app-blue.ico</ApplicationIcon>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
     <DebugSymbols>True</DebugSymbols>
