@@ -7,18 +7,9 @@ namespace DailyEvents
 {
   public class App : Form
   {
-    static private readonly short MaxGroups          = 5;
-    static private readonly short UsernameMaxLength  = 20;
-    static private readonly short GroupNameMaxLength = 30;
-    static private readonly short GroupCodeMaxLength = 15;
-    static private readonly short CommentMaxLength   = 70;
-
     private readonly ApiClient api = new ApiClient();
 
-    private readonly ContextMenu trayMenu = new ContextMenu();
-    private NotifyIcon trayIcon;
-
-    private bool newVersionBalloonShown = false;
+    private readonly NotifyIcon trayIcon = new NotifyIcon();
 
     [STAThread]
     static public void Main()
@@ -28,38 +19,25 @@ namespace DailyEvents
 
     public App()
     {
+      InitTrayIcon();
       RebuildTrayMenu();
-
-      if (AppInfo.DevMode())
-        InitToolStrip();
-      else
-        InitTrayIcon();
     }
 
     private void InitToolStrip()
     {
       Controls.Add(new ToolStrip() {
-        ContextMenu = trayMenu
+        ContextMenu = new ContextMenu()
       });
       MouseMove += OnRefreshGroup;
     }
 
     private void InitTrayIcon()
     {
-      trayIcon = new NotifyIcon();
       trayIcon.Text = "Daily Events";
-      trayIcon.ContextMenu = trayMenu;
       trayIcon.MouseDown += OnRefreshGroup;
       trayIcon.Visible = true;
-      trayIcon.BalloonTipClicked += OnBalloonTipClicked;
 
       SetAppIcon();
-
-      if (AppInfo.CurrentVersionNumber < AppInfo.LatestVersionNumber)
-      {
-        newVersionBalloonShown = true;
-        ShowInfo("New version available, grab it while it's hot!");
-      }
     }
 
     private void RebuildTrayMenu()
@@ -69,31 +47,30 @@ namespace DailyEvents
 
     private void RebuildTrayMenu(List<Status> statuses, List<Comment> comments)
     {
-      Invalidate();
-      trayMenu.MenuItems.Clear();
+      ContextMenu menu = new ContextMenu();
 
       if (IsCurrentGroupSet())
       {
-        trayMenu.MenuItems.Add(BuildCurrentGroupMenu());
-        trayMenu.MenuItems.Add("Attending today: " + GetSizeOf(statuses));
-        trayMenu.MenuItems.Add("-");
+        menu.MenuItems.Add(BuildCurrentGroupMenu());
+        menu.MenuItems.Add("Attending today: " + GetSizeOf(statuses));
+        menu.MenuItems.Add("-");
 
         if (statuses != null && statuses.Count > 0)
         {
           foreach (var status in statuses)
           {
             string participant = status.participant;
-            trayMenu.MenuItems.Add(participant);
+            menu.MenuItems.Add(participant);
           }
-          trayMenu.MenuItems.Add("-");
+          menu.MenuItems.Add("-");
         }
         // http://en.wikipedia.org/wiki/Western_Latin_character_sets_(computing)
 
-        trayMenu.MenuItems.Add("\u221A  I'm in", OnReplyYes);
-        trayMenu.MenuItems.Add("\u00D7  I'm out", OnReplyNo);
-        trayMenu.MenuItems.Add("-");
-        trayMenu.MenuItems.Add("Add comment", OnNewComment);
-        trayMenu.MenuItems.Add("-");
+        menu.MenuItems.Add("\u221A  I'm in", OnReplyYes);
+        menu.MenuItems.Add("\u00D7  I'm out", OnReplyNo);
+        menu.MenuItems.Add("-");
+        menu.MenuItems.Add("Add comment", OnNewComment);
+        menu.MenuItems.Add("-");
 
         if (comments != null && comments.Count > 0)
         {
@@ -106,26 +83,33 @@ namespace DailyEvents
             string localTime   = DateUtils.FormatTime(timestamp, timezone);
 
             string commentLabel = localTime + " " + participant + ": " + commentText;
-            trayMenu.MenuItems.Add(commentLabel, (EventHandler) OnExistingComment);
+            menu.MenuItems.Add(commentLabel, (EventHandler) OnExistingComment);
           }
-          trayMenu.MenuItems.Add("-");
+          menu.MenuItems.Add("-");
         }
       }
 
-      trayMenu.MenuItems.Add(BuildGroupsMenu());
-      trayMenu.MenuItems.Add(BuildSettingsMenu());
+      menu.MenuItems.Add(BuildGroupsMenu());
+      menu.MenuItems.Add(BuildSettingsMenu());
 
-      trayMenu.MenuItems.Add("-");
-      trayMenu.MenuItems.Add("About", OnAbout);
-      trayMenu.MenuItems.Add("Exit", OnExit);
+      menu.MenuItems.Add("-");
+      menu.MenuItems.Add("About", OnAbout);
+      menu.MenuItems.Add("Exit", OnExit);
 
-      Validate();
+      trayIcon.ContextMenu = menu;
+
+      Refresh();
     }
 
     private MenuItem BuildSettingsMenu()
     {
-      MenuItem menu = new MenuItem("Settings");
+      MenuItem menu = new MenuItem("Settings" + (AppInfo.IsOutdated ? " (!)" : ""));
       menu.MenuItems.Add("Change display name", OnChangeDisplayName);
+
+      if (AppInfo.IsOutdated)
+      {
+        menu.MenuItems.Add("Download new version (!)", OnDownloadNewVersion);
+      }
       return menu;
     }
 
@@ -149,7 +133,7 @@ namespace DailyEvents
 
       foreach (var group in groups)
       {
-        if (numberOfGroupsAdded == MaxGroups)
+        if (numberOfGroupsAdded == Constraints.MaxGroups)
           break;
 
         if (group != currentGroup)
@@ -170,7 +154,7 @@ namespace DailyEvents
 
     protected override void OnLoad(EventArgs e)
     {
-      Visible = AppInfo.DevMode();
+      Visible = false;
       ShowInTaskbar = false;
       base.OnLoad(e);
     }
@@ -179,8 +163,7 @@ namespace DailyEvents
     {
       if (isDisposing)
       {
-        if (trayIcon != null)
-          trayIcon.Dispose();
+        trayIcon.Dispose();
       }
       base.Dispose(isDisposing);
     }
@@ -251,7 +234,7 @@ namespace DailyEvents
 
     private void OnNewComment(object sender, EventArgs e)
     {
-      string comment = Prompt.Show("Add Comment", "Enter your comment:", CommentMaxLength);
+      string comment = Prompt.Show("Add Comment", "Enter your comment:", Constraints.CommentMaxLength);
 
       if (comment.Length > 0)
       {
@@ -280,7 +263,10 @@ namespace DailyEvents
 
     private void OnChangeDisplayName(object sender, EventArgs e)
     {
-      string name = Prompt.Show("Change Display Name", "Enter the name you want to use from now on:", Settings.DisplayName, UsernameMaxLength);
+      string name = Prompt.Show(
+        "Change Display Name", "Enter the name you want to use from now on:",
+        Settings.DisplayName, Constraints.UsernameMaxLength
+      );
 
       if (name.Length == 0)
         return;
@@ -290,12 +276,23 @@ namespace DailyEvents
       ShowInfo("Display name changed to \"" + name + "\"");
     }
 
+    private void OnDownloadNewVersion(object sender, EventArgs e)
+    {
+      // bool mouseButtonLeft = ((Control.MouseButtons & MouseButtons.Left) == MouseButtons.Left);
+
+      string downloadUrl = AppInfo.WebsiteUrl() + "download/DailyEvents-windows.zip";
+      System.Diagnostics.Process.Start(downloadUrl);
+    }
+
     private void OnCreateGroup(object sender, EventArgs e)
     {
       if (!CanJoinOrCreateGroups())
         return;
       
-      string groupName = Prompt.Show("Create Group", "Enter the group's name:", GroupNameMaxLength);
+      string groupName = Prompt.Show(
+        "Create Group", "Enter the group's name:",
+        Constraints.GroupNameMaxLength
+      );
       
       if (groupName.Length == 0)
         return;
@@ -328,7 +325,10 @@ namespace DailyEvents
       if (!CanJoinOrCreateGroups())
         return;
       
-      string code = Prompt.Show("Join Group", "Enter the code you've received from a group member:", GroupCodeMaxLength);
+      string code = Prompt.Show(
+        "Join Group", "Enter the code you've received from a group member:",
+        Constraints.GroupCodeMaxLength
+      );
       
       if (code.Length == 0)
         return;
@@ -406,7 +406,10 @@ namespace DailyEvents
       string groupName = GetParentMenuText(sender);
       string groupId   = Settings.CurrentGroup;
       
-      string newName = Prompt.Show("Rename Group", "Enter the name you want to use for this group:", groupName, GroupNameMaxLength);
+      string newName = Prompt.Show(
+        "Rename Group", "Enter the name you want to use for this group:",
+        groupName, Constraints.GroupNameMaxLength
+      );
       
       if (newName.Length == 0)
         return;
@@ -449,11 +452,11 @@ namespace DailyEvents
 
     private bool CanJoinOrCreateGroups()
     {
-      bool maxGroupsReached = Settings.Groups.Count >= MaxGroups;
+      bool maxGroupsReached = Settings.Groups.Count >= Constraints.MaxGroups;
       
       if (maxGroupsReached)
       {
-        MessageBox.Show("Sorry, this client is limited to " + MaxGroups + " groups for now.", "Max Groups Reached");
+        MessageBox.Show("Sorry, this client is limited to " + Constraints.MaxGroups + " groups for now.", "Max Groups Reached");
       }
       return !maxGroupsReached;
     }
@@ -466,40 +469,24 @@ namespace DailyEvents
 
     private void ShowInfo(string message)
     {
-      if (trayIcon != null)
-        trayIcon.ShowBalloonTip(10000, "", message, ToolTipIcon.None);
+      trayIcon.ShowBalloonTip(10000, "", message, ToolTipIcon.None);
     }
     
     private void ShowNetworkError(Exception ex)
     {
       Console.Write(ex);
       
-      if (trayIcon != null)
-        trayIcon.ShowBalloonTip(10000, "Network Error", "Please wait a bit and try again.", ToolTipIcon.Error);
+      trayIcon.ShowBalloonTip(10000, "Network Error", "Please wait a bit and try again.", ToolTipIcon.Error);
     }
     
     private void SetAppIcon()
     {
-      if (trayIcon != null)
-        trayIcon.Icon = new Icon(GetEmbeddedResource("app-blue.ico"));
+      trayIcon.Icon = new Icon(GetEmbeddedResource("app-blue.ico"));
     }
     
     private void SetLoadingIcon()
     {
-      if (trayIcon != null)
-        trayIcon.Icon = new Icon(GetEmbeddedResource("app-gray.ico"));
-    }
-
-    private void OnBalloonTipClicked(object sender, EventArgs e)
-    {
-      bool mouseButtonLeft = ((Control.MouseButtons & MouseButtons.Left) == MouseButtons.Left);
-
-      if (newVersionBalloonShown && mouseButtonLeft)
-      {
-        string downloadUrl = AppInfo.WebsiteUrl() + "download/DailyEvents-windows.zip";
-        System.Diagnostics.Process.Start(downloadUrl);
-        newVersionBalloonShown = false;
-      }
+      trayIcon.Icon = new Icon(GetEmbeddedResource("app-gray.ico"));
     }
 
     private void OnAbout(object sender, EventArgs e)

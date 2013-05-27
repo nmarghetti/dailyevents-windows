@@ -180,6 +180,6 @@ Global
 		$29.MessageStyle = $30
 		$30.LineAlign = 0
 		$29.inheritsSet = Mono
-		version = 1.0.0
+		version = 1.0.1
 	EndGlobalSection
 EndGlobal

@@ -49,7 +49,7 @@ namespace DailyEvents
     static public string CurrentVersion
     {
       get {
-        return "1.0.0"; // Application.ProductVersion
+        return "1.0.1"; // Application.ProductVersion
       }
     }
 
@@ -73,6 +73,13 @@ namespace DailyEvents
       get {
         string version = LatestVersion;
         return StringVersionToInt(version);
+      }
+    }
+
+    static public bool IsOutdated
+    {
+      get {
+        return AppInfo.CurrentVersionNumber < AppInfo.LatestVersionNumber;
       }
     }
 
