@@ -8,7 +8,7 @@ namespace DailyEvents
 
     static AppInfo()
     {
-      string response = new HttpClient(WebsiteUrl()).Get("meta/apps.info");
+      string response = new HttpClient(BackendUrl()).Get("meta/apps.info");
       Metadata = Json.Deserialize(response);
     }
     
@@ -17,7 +17,7 @@ namespace DailyEvents
       return false;
     }
 
-    static public string WebsiteUrl()
+    static public string BackendUrl()
     {
       string target = "dailyevents";
       if (DevMode()) target += "-dev";

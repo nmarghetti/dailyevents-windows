@@ -280,7 +280,7 @@ namespace DailyEvents
     {
       // bool mouseButtonLeft = ((Control.MouseButtons & MouseButtons.Left) == MouseButtons.Left);
 
-      string downloadUrl = AppInfo.WebsiteUrl() + "download/DailyEvents-windows.zip";
+      string downloadUrl = AppInfo.MarketingUrl() + "/download/DailyEvents-windows.zip";
       System.Diagnostics.Process.Start(downloadUrl);
     }
 
