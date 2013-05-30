@@ -49,7 +49,7 @@ namespace DailyEvents
     static public string CurrentVersion
     {
       get {
-        return "1.0.1"; // Application.ProductVersion
+        return "1.0.2"; // Application.ProductVersion
       }
     }
 

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Text.RegularExpressions;
 using System.Windows.Forms;
 
 namespace DailyEvents
@@ -23,20 +24,12 @@ namespace DailyEvents
       RebuildTrayMenu();
     }
 
-    private void InitToolStrip()
-    {
-      Controls.Add(new ToolStrip() {
-        ContextMenu = new ContextMenu()
-      });
-      MouseMove += OnRefreshGroup;
-    }
-
     private void InitTrayIcon()
     {
       trayIcon.Text = "Daily Events";
-      trayIcon.MouseDown += OnRefreshGroup;
+      trayIcon.ContextMenu = new ContextMenu();
+      trayIcon.ContextMenu.Popup += OnRefreshGroup;
       trayIcon.Visible = true;
-
       SetAppIcon();
     }
 
@@ -47,30 +40,31 @@ namespace DailyEvents
 
     private void RebuildTrayMenu(List<Status> statuses, List<Comment> comments)
     {
-      ContextMenu menu = new ContextMenu();
+      MenuItem.MenuItemCollection menuItems = trayIcon.ContextMenu.MenuItems;
+      menuItems.Clear();
 
       if (IsCurrentGroupSet())
       {
-        menu.MenuItems.Add(BuildCurrentGroupMenu());
-        menu.MenuItems.Add("Attending today: " + GetSizeOf(statuses));
-        menu.MenuItems.Add("-");
+        menuItems.Add(BuildCurrentGroupMenu());
+        menuItems.Add("Attending today: " + GetSizeOf(statuses));
+        menuItems.Add("-");
 
         if (statuses != null && statuses.Count > 0)
         {
           foreach (var status in statuses)
           {
             string participant = status.participant;
-            menu.MenuItems.Add(participant);
+            menuItems.Add(participant);
           }
-          menu.MenuItems.Add("-");
+          menuItems.Add("-");
         }
         // http://en.wikipedia.org/wiki/Western_Latin_character_sets_(computing)
 
-        menu.MenuItems.Add("\u221A  I'm in", OnReplyYes);
-        menu.MenuItems.Add("\u00D7  I'm out", OnReplyNo);
-        menu.MenuItems.Add("-");
-        menu.MenuItems.Add("Add comment", OnNewComment);
-        menu.MenuItems.Add("-");
+        menuItems.Add("\u221A  I'm in", OnReplyYes);
+        menuItems.Add("\u00D7  I'm out", OnReplyNo);
+        menuItems.Add("-");
+        menuItems.Add("Add comment", OnNewComment);
+        menuItems.Add("-");
 
         if (comments != null && comments.Count > 0)
         {
@@ -83,20 +77,18 @@ namespace DailyEvents
             string localTime   = DateUtils.FormatTime(timestamp, timezone);
 
             string commentLabel = localTime + " " + participant + ": " + commentText;
-            menu.MenuItems.Add(commentLabel, (EventHandler) OnExistingComment);
+            menuItems.Add(commentLabel, (EventHandler) OnExistingComment);
           }
-          menu.MenuItems.Add("-");
+          menuItems.Add("-");
         }
       }
 
-      menu.MenuItems.Add(BuildGroupsMenu());
-      menu.MenuItems.Add(BuildSettingsMenu());
+      menuItems.Add(BuildGroupsMenu());
+      menuItems.Add(BuildSettingsMenu());
 
-      menu.MenuItems.Add("-");
-      menu.MenuItems.Add("About", OnAbout);
-      menu.MenuItems.Add("Exit", OnExit);
-
-      trayIcon.ContextMenu = menu;
+      menuItems.Add("-");
+      menuItems.Add("About", OnAbout);
+      menuItems.Add("Exit", OnExit);
 
       Refresh();
     }
@@ -138,7 +130,7 @@ namespace DailyEvents
 
         if (group != currentGroup)
         {
-          menu.MenuItems.Add(group, (EventHandler)OnSwitchToGroup); // (EventHandler)((sender, e) => {})
+          menu.MenuItems.Add(group, (EventHandler) OnSwitchToGroup); // (EventHandler)((sender, e) => {})
         }
         numberOfGroupsAdded++;
       }
@@ -168,31 +160,30 @@ namespace DailyEvents
       base.Dispose(isDisposing);
     }
 
-    private void OnRefreshGroup(object sender, MouseEventArgs e)
+    private void OnRefreshGroup(object sender, EventArgs e)
     {
-      if (e.Button == MouseButtons.Right)
+      // if (e.Button == MouseButtons.Right)
+
+      try
       {
-        try
+        if (IsCurrentGroupSet())
         {
-          if (IsCurrentGroupSet())
-          {
-            SetLoadingIcon();
-            Result result = api.GetEvent(Settings.CurrentGroup);
-            RebuildTrayMenu(result.statuses, result.comments);
-          }
-          else
-          {
-            RebuildTrayMenu();
-          }
+          SetLoadingIcon();
+          Result result = api.GetEvent(Settings.CurrentGroup);
+          RebuildTrayMenu(result.statuses, result.comments);
         }
-        catch (Exception ex)
+        else
         {
-          ShowNetworkError(ex);
+          RebuildTrayMenu();
         }
-        finally
-        {
-          SetAppIcon();
-        }
+      }
+      catch (Exception ex)
+      {
+        ShowNetworkError(ex);
+      }
+      finally
+      {
+        SetAppIcon();
       }
     }
 
@@ -257,8 +248,23 @@ namespace DailyEvents
 
     private void OnExistingComment(object sender, EventArgs e)
     {
+      /*
+      \b       -matches a word boundary (spaces, periods..etc)
+      (?:      -define the beginning of a group, the ?: specifies not to specifically capture the data within this group.
+      http://  -literal string, match http://
+      |        -OR
+      www\.    -literal string, match www. (the \. means a literal ".")
+      )        -end group
+      \S+      -match a series of non-whitespace characters.
+      \b       -match the closing word boundary.
+      */
+      Regex linkParser = new Regex(
+        @"\b(?:http://|www\.)\S+\b", RegexOptions.Compiled | RegexOptions.IgnoreCase
+      );
       string comment = GetCurrentMenuText(sender);
-      Clipboard.SetText(comment);
+
+      foreach(Match match in linkParser.Matches(comment))
+        System.Diagnostics.Process.Start(match.Value);
     }
 
     private void OnChangeDisplayName(object sender, EventArgs e)
