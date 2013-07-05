@@ -22,7 +22,14 @@ namespace DailyEvents
       Assert.IsNotNullOrEmpty(time);
       Assert.AreEqual(5, time.Length);
     }
-    
+
+    [Test()]
+    public void should_format_time_with_decimals()
+    {
+      Assert.IsNotNullOrEmpty(DateUtils.FormatTime("1373007551225.54", "-120"));
+      Assert.IsNotNullOrEmpty(DateUtils.FormatTime("1373007551225,54", "-120"));
+    }
+
     [Test()]
     public void should_get_utc_offset_in_minutes()
     {
