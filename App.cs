@@ -252,6 +252,7 @@ namespace DailyEvents
       \b       -matches a word boundary (spaces, periods..etc)
       (?:      -define the beginning of a group, the ?: specifies not to specifically capture the data within this group.
       http://  -literal string, match http://
+      https://  -literal string, match https://
       |        -OR
       www\.    -literal string, match www. (the \. means a literal ".")
       )        -end group
@@ -259,7 +260,7 @@ namespace DailyEvents
       \b       -match the closing word boundary.
       */
       Regex linkParser = new Regex(
-        @"\b(?:http://|www\.)\S+\b", RegexOptions.Compiled | RegexOptions.IgnoreCase
+        @"\b(?:http://|https://|www\.)\S+\b", RegexOptions.Compiled | RegexOptions.IgnoreCase
       );
       string comment = GetCurrentMenuText(sender);
 
