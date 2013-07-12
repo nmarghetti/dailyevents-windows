@@ -27,8 +27,6 @@ namespace DailyEvents
     private void InitTrayIcon()
     {
       trayIcon.Text = "Daily Events";
-      trayIcon.ContextMenu = new ContextMenu();
-      trayIcon.ContextMenu.Popup += OnRefreshGroup;
       trayIcon.Visible = true;
       SetAppIcon();
     }
@@ -40,8 +38,10 @@ namespace DailyEvents
 
     private void RebuildTrayMenu(List<Status> statuses, List<Comment> comments)
     {
+      trayIcon.ContextMenu = new ContextMenu();
+      trayIcon.ContextMenu.Popup += OnRefreshGroup;
+
       MenuItem.MenuItemCollection menuItems = trayIcon.ContextMenu.MenuItems;
-      menuItems.Clear();
 
       if (IsCurrentGroupSet())
       {
@@ -89,8 +89,6 @@ namespace DailyEvents
       menuItems.Add("-");
       menuItems.Add("About", OnAbout);
       menuItems.Add("Exit", OnExit);
-
-      Refresh();
     }
 
     private MenuItem BuildSettingsMenu()
