@@ -63,7 +63,7 @@ namespace DailyEvents
         menuItems.Add("\u221A  I'm in", OnReplyYes);
         menuItems.Add("\u00D7  I'm out", OnReplyNo);
         menuItems.Add("-");
-        menuItems.Add("Add comment", OnNewComment);
+        menuItems.Add("\u002B Add comment", OnNewComment);
         menuItems.Add("-");
 
         if (comments != null && comments.Count > 0)
