@@ -1,7 +1,6 @@
-# Daily Events for Windows
+dailyevents-windows
+===================
 
-Daily Events for Windows is a system tray application for organizing quotidian events.
+System tray Windows application for organizing quotidian events.
 
-## Author
 
-[Tiago Fernandez](http://tiagofernandez.com) (2013)
