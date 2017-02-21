@@ -36,6 +36,10 @@ namespace DailyEvents
 
       Debug.WriteLine(request.RequestUri);
 
+      foreach (var header in customHeaders)
+      {
+        request.Headers[header.Key] = header.Value;
+      }
       using (HttpWebResponse webResponse = request.GetResponse() as HttpWebResponse)
       {
         StreamReader reader = new StreamReader(webResponse.GetResponseStream());

@@ -8,7 +8,7 @@ namespace DailyEvents
 
     static AppInfo()
     {
-      string response = new HttpClient(BackendUrl()).Get("meta/apps.info");
+      string response = new HttpClient(BackendUrl(), ApiClient.GetApiHeaders()).Get("meta/apps.info");
       Metadata = Json.Deserialize(response);
     }
     
@@ -19,14 +19,17 @@ namespace DailyEvents
 
     static public string BackendUrl()
     {
-      string target = "dailyevents";
-      if (DevMode()) target += "-dev";
-      return "http://" + target + ".parseapp.com/";
+      return "https://parseapi.back4app.com/";
     }
-    
+
     static public string MarketingUrl()
     {
       return Metadata["marketing_url"];
+    }
+
+    static public string OnlineUrl(string group, string name)
+    {
+      return Metadata["marketing_url"] + "mobile/?code=" + group + "&name=" + name;
     }
 
     static public string DonationUrl()
@@ -42,14 +45,14 @@ namespace DailyEvents
     static public string ApiEntryPoint
     {
       get {
-        return "https://api.parse.com/1/functions/";
+        return "https://parseapi.back4app.com/functions/";
       }
     }
 
     static public string CurrentVersion
     {
       get {
-        return "1.0.5"; // Application.ProductVersion
+        return "1.0.6"; // Application.ProductVersion
       }
     }
 

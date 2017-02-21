@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Text.RegularExpressions;
@@ -13,8 +14,9 @@ namespace DailyEvents
     private readonly NotifyIcon trayIcon = new NotifyIcon();
 
     [STAThread]
-    static public void Main()
+    static public void Main(string[] args)
     {
+      //Properties.Settings.Default.Reset();
       Application.Run(new App());
     }
 
@@ -107,6 +109,7 @@ namespace DailyEvents
     {
       MenuItem menu = new MenuItem(Settings.CurrentGroupName);
       menu.MenuItems.Add("Invite people", OnInvitePeople);
+      menu.MenuItems.Add("Online version", OnOnlineVersion);
       menu.MenuItems.Add("Rename group", OnRenameGroup);
       menu.MenuItems.Add("Leave group", OnLeaveGroup);
       return menu;
@@ -406,6 +409,29 @@ namespace DailyEvents
       }
     }
 
+    private void OnOnlineVersion(object sender, EventArgs e)
+    {
+      try
+      {
+        SetLoadingIcon();
+
+        string groupId = Settings.CurrentGroup;
+        string groupCode = api.GetGroupById(groupId).code;
+
+        Clipboard.SetText(groupCode);
+        Website.Show(groupCode, Settings.DisplayName);
+      }
+      catch (Exception ex)
+      {
+        ShowNetworkError(ex);
+      }
+      finally
+      {
+        SetAppIcon();
+      }
+     
+    }
+    
     private void OnRenameGroup(object sender, EventArgs e)
     {
       string groupName = GetParentMenuText(sender);
